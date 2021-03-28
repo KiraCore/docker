@@ -37,7 +37,7 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     openssl
 
 apt update -y
-apt install -y bc dnsutils psmisc netcat
+apt install -y bc dnsutils psmisc netcat nodejs npm
 
 ARCHITECTURE=$(uname -m)
 GO_VERSION="1.15.6"
