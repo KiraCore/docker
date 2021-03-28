@@ -33,7 +33,8 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     curl \
     iputils-ping \
     nano \
-    jq 
+    jq \
+    openssl
 
 apt update -y
 apt install -y bc dnsutils psmisc netcat

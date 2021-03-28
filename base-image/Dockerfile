@@ -57,3 +57,5 @@ RUN go get google.golang.org/protobuf/cmd/protoc-gen-go
 
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 RUN cargo --version
+
+ENTRYPOINT [ "bash", "-c" ]
