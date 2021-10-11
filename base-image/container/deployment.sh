@@ -42,10 +42,10 @@ apt install -y bc dnsutils psmisc netcat nodejs npm
 ARCHITECTURE=$(uname -m)
 GO_VERSION="1.15.6"
 CDHELPER_VERSION="v0.6.51"
-FLUTTER_CHANNEL="dev"
-FLUTTER_VERSION="1.27.0-8.0.pre-$FLUTTER_CHANNEL"
-DART_CHANNEL_PATH="dev/release"
-DART_VERSION="2.13.0-59.0.dev"
+FLUTTER_CHANNEL="stable"
+FLUTTER_VERSION="2.5.2-$FLUTTER_CHANNEL"
+DART_CHANNEL_PATH="stable/release"
+DART_VERSION="2.14.3"
 
 
 if [[ "${ARCHITECTURE,,}" == *"arm"* ]] || [[ "${ARCHITECTURE,,}" == *"aarch"* ]] ; then
@@ -116,3 +116,5 @@ unzip ./$DART_ZIP -d $FLUTTER_CACHE
 
 flutter config --enable-web
 flutter doctor
+
+rm -fv $DART_ZIP $FLUTTER_TAR
