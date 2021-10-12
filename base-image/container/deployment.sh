@@ -40,7 +40,7 @@ apt update -y
 apt install -y bc dnsutils psmisc netcat nodejs npm
 
 ARCHITECTURE=$(uname -m)
-GO_VERSION="1.15.6"
+GO_VERSION="1.17.2"
 CDHELPER_VERSION="v0.6.51"
 FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="2.5.2-$FLUTTER_CHANNEL"
@@ -100,7 +100,7 @@ wget https://dl.google.com/go/$GO_TAR &>/dev/null
 tar -C /usr/local -xvf $GO_TAR &>/dev/null
 
 echo "Setting up essential flutter dependencies..."
-wget https://storage.googleapis.com/flutter_infra/releases/$FLUTTER_CHANNEL/linux/$FLUTTER_TAR
+wget https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/linux/$FLUTTER_TAR
 mkdir -p /usr/lib # make sure flutter root directory exists
 tar -C /usr/lib -xvf ./$FLUTTER_TAR
 
