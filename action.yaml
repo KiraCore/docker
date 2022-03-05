@@ -1,6 +1,0 @@
-# action.yml
-name: 'base-image'
-description: 'KIRA Base Image for all deployments'
-runs:
-  using: 'docker'
-  image: 'base-image/Dockerfile'
