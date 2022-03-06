@@ -81,7 +81,8 @@ jobs:
         id: build-and-push-base
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
-          context: "{{defaultContext}}:base-image"
+          context: ./base-image
+          file: ./base-image/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-base.outputs.tags }}
           labels: ${{ steps.meta-base.outputs.labels }}
@@ -90,7 +91,8 @@ jobs:
         id: build-and-push-cors
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
-          context: "{{defaultContext}}:cors-anywhere"
+          context: ./cors-anywhere
+          file: ./cors-anywhere/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-cors.outputs.tags }}
           labels: ${{ steps.meta-cors.outputs.labels }}
