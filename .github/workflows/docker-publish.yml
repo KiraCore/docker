@@ -81,7 +81,7 @@ jobs:
         id: build-and-push-base
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
-          context: ./base-image
+          context: "{{defaultContext}}:base-image"
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-base.outputs.tags }}
           labels: ${{ steps.meta-base.outputs.labels }}
@@ -90,12 +90,12 @@ jobs:
         id: build-and-push-cors
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
-          context: ./cors-anywhere
+          context: "{{defaultContext}}:cors-anywhere"
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-cors.outputs.tags }}
           labels: ${{ steps.meta-cors.outputs.labels }}
 
-      # This is not the best way to store cosign keys, however as of today the fulcio does not work
+      # This is not the best way to store cosign keys, all must be wiped
       - name: Write signing key to disk
         run: 'echo "$KEY" > cosign.key'
         shell: bash
@@ -116,7 +116,7 @@ jobs:
         # against the sigstore community Fulcio instance.
         # run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}@${{ steps.build-and-push-base.outputs.digest }}
         # run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}@${{ steps.build-and-push-base.outputs.digest }}
-        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}@${{ steps.build-and-push.outputs.digest }}
+        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}@${{ steps.build-and-push-base.outputs.digest }}
 
       # If the secret is safely wiped, then the time its exposed to the build runner is very short
       - name: Remove signing key from disk
