@@ -28,3 +28,4 @@ f+mU9F/Qbfq25bBWV2+NlYMJv3KvKHNtu3Jknt6yizZjUV4b8WGfKBzFYw==
 ```
 cosign verify --key ./cosign.pub ghcr.io/kiracore/docker/base-image:v0.0.1.0
 ```
+
