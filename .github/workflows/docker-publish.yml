@@ -21,6 +21,7 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME_BASE: ${{ github.repository }}/base-image
   IMAGE_NAME_CORS: ${{ github.repository }}/cors-anywhere
+  GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }} 
 
 jobs:
   build:
@@ -81,6 +82,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+      # This is not the best way to store cosign keys, however as of today the fulcio does not work
       - name: Write signing key to disk
         run: 'echo "$KEY" > cosign.key'
         shell: bash
@@ -99,4 +101,8 @@ jobs:
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        run: cosign sign  --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ github.run_id }}
+        run: cosign sign  --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}
+
+      - name: Remove signing key from disk
+        run: 'rm -fv cosign.key'
+        shell: bash
