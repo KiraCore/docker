@@ -11,34 +11,19 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
 echo "APT Update, Update and Intall..."
 apt-get update -y --fix-missing
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-    file build-essential net-tools hashdeep make \
-    nodejs \
-    node-gyp \
-    tar \
-    unzip \
-    xz-utils \
-    yarn \
-    zip \
-    protobuf-compiler \
-    golang-goprotobuf-dev \
-    golang-grpc-gateway \
-    golang-github-grpc-ecosystem-grpc-gateway-dev \
-    clang \
-    cmake \
-    gcc \
-    g++ \
-    pkg-config \
-    libudev-dev \
-    libusb-1.0-0-dev \
-    curl \
-    iputils-ping \
-    nano \
-    jq \
-    openssl
+    file build-essential net-tools hashdeep make ca-certificates p7zip-full lsof libglu1-mesa bash gnupg \
+    nodejs node-gyp python python3 python3-pip tar unzip xz-utils yarn zip protobuf-compiler golang-goprotobuf-dev \
+    golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev clang cmake gcc g++ pkg-config libudev-dev \
+    libusb-1.0-0-dev curl iputils-ping nano jq openssl dos2unix
 
 apt update -y
 apt install -y bc dnsutils psmisc netcat nodejs npm
 
+# install deb package manager
+echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
+	apt install nfpm
+
+# define versions of the software to install manually
 ARCHITECTURE=$(uname -m)
 OS_VERSION=$(uname) && OS_VERSION="${OS_VERSION,,}"
 GO_VERSION="1.17.8"
