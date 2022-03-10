@@ -5,7 +5,7 @@ KIRA Docker Images
 
 In order to have ability to modify & push workflows to github from the local machines
 *  Generate a "Personal Access Token" with workflow rights
-*  Change Remote url to https://YOUR_USERNAME:YOUR_TOKEN@github.com/YOUR_USERNAME/YOUR_REPOSITORY
+*  Change Remote url to https://YOUR_USERNAME:YOUR_TOKEN@github.com/KiraCore/docker.git
 
 # Signatures
 
