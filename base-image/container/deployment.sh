@@ -32,7 +32,7 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.16.1"
-KIRA_UTILS_BRANCH="v0.0.2"
+KIRA_UTILS_BRANCH="v0.0.3"
 
 cd /tmp && rm -fv ./i.sh && \
  wget https://raw.githubusercontent.com/KiraCore/tools/$KIRA_UTILS_BRANCH/bash-utils/install.sh -O ./i.sh && \
