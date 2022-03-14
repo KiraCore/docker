@@ -1,4 +1,4 @@
-FROM kiracore/docker:main-base-image
+FROM ghcr.io/kiracore/docker/base-image:main
 
 # Local Update
 # (rm -fv $KIRA_INFRA/docker/base-image/Dockerfile) && nano $KIRA_INFRA/docker/base-image/Dockerfile

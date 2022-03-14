@@ -7,18 +7,19 @@ name: Docker
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev, v*.*.* ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, dev, v*.*.* ]
 
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}/base-image
-
+  IMAGE_NAME_BASE: ${{ github.repository }}/base-image
+  IMAGE_NAME_CORS: ${{ github.repository }}/cors-anywhere
+  GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }} 
 
 jobs:
   build:
@@ -33,26 +34,26 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.0
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@1e95c1de343b5b0c23352d6417ee3e48d5bcd422
+        uses: sigstore/cosign-installer@v2.1.0
         with:
-          cosign-release: 'v1.4.0'
+          cosign-release: 'v1.6.0'
 
 
       # Workaround: https://github.com/docker/build-push-action/issues/461
       - name: Setup Docker buildx
-        uses: docker/setup-buildx-action@79abd3f86f79a9d68a23c75a09a9a85889262adf
+        uses: docker/setup-buildx-action@v1.6.0
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        uses: docker/login-action@v1.14.1
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -60,32 +61,83 @@ jobs:
 
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+      - name: Extract Docker metadata for cors-anywhere
+        id: meta-cors
+        uses: docker/metadata-action@v3.6.2
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}
+          labels: |
+            org.opencontainers.image.licenses=AGPLv3
+            org.opencontainers.image.url=ghcr.io/kiracore/docker/cors-anywhere:${{ env.GITHUB_BRANCH }}
+            org.opencontainers.image.source=https://github.com/KiraCore/docker/cors-anywhere
+            org.opencontainers.image.title=cors-anywhere
+
+      - name: Extract Docker metadata for base-image
+        id: meta-base
+        uses: docker/metadata-action@v3.6.2
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}
+          labels: |
+            org.opencontainers.image.licenses=AGPLv3
+            org.opencontainers.image.url=ghcr.io/kiracore/docker/base-image:${{ env.GITHUB_BRANCH }}
+            org.opencontainers.image.source=https://github.com/KiraCore/docker/base-image
+            org.opencontainers.image.title=base-image
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        id: build-and-push
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+      - name: Build and push Docker base-image image
+        id: build-and-push-base
+        uses: docker/build-push-action@v2.9.0
         with:
           context: ./base-image
+          file: ./base-image/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta-base.outputs.tags }}
+          labels: ${{ steps.meta-base.outputs.labels }}
+
+      - name: Build and push Docker cors-anywhere image
+        id: build-and-push-cors
+        uses: docker/build-push-action@v2.9.0
+        with:
+          context: ./cors-anywhere
+          file: ./cors-anywhere/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-cors.outputs.tags }}
+          labels: ${{ steps.meta-cors.outputs.labels }}
+
+      # This is not the best way to store cosign keys, all must be wiped
+      - name: Write signing key to disk
+        run: 'echo "$KEY" > cosign.key'
+        shell: bash
+        env:
+          KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
       # repository is public to avoid leaking data.  If you would like to publish
       # transparency data even for private images, pass --force to cosign below.
       # https://github.com/sigstore/cosign
-      - name: Sign the published Docker image
+      - name: Sign the published Docker base-image image
         if: ${{ github.event_name != 'pull_request' }}
         env:
           COSIGN_EXPERIMENTAL: "true"
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
+        run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}
+        # run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}@${{ steps.build-and-push-base.outputs.digest }}
+
+      - name: Sign the published Docker cors-anywhere image
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        # This step uses the identity token to provision an ephemeral certificate
+        # against the sigstore community Fulcio instance.
+        run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.GITHUB_BRANCH }}
+
+      # If the secret is safely wiped, then the time its exposed to the build runner is very short
+      - name: Remove signing key from disk
+        if: always()
+        run: 'shred -vzn 3 cosign.key && rm -fv cosign.key'
+        shell: bash
