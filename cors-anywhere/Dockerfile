@@ -1,4 +1,4 @@
-FROM ghcr.io/kiracore/docker/base-image:main
+FROM ghcr.io/kiracore/docker/base-image:${GITHUB_BRNACH}
 
 # Local Update
 # (rm -fv $KIRA_INFRA/docker/base-image/Dockerfile) && nano $KIRA_INFRA/docker/base-image/Dockerfile
