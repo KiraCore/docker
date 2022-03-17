@@ -53,6 +53,7 @@ jobs:
         shell: bash
         run: |
           echo "(current dir): $PWD" && ls -Rl ./
+          chmod -R 555 ./scripts
           make build
           echo "(current dir): $PWD" && ls -Rl ./
       # Install the cosign tool except on PR
