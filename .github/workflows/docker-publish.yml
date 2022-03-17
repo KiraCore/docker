@@ -47,12 +47,14 @@ jobs:
         run: |
           echo "SOURCE_BRANCH=$(echo ${{ env.REF_BRANCH }} | tr / -)" >> $GITHUB_ENV
           echo "DESTINATION_BRANCH=$(echo ${{ env.BASE_REF_BRANCH }} | tr / -)" >> $GITHUB_ENV
+      - name: Checkout repository
+        uses: actions/checkout@v3.0.0
       - name: Build Docker Images from Docker.src
         shell: bash
         run: |
+          echo "(current dir): $PWD" && ls -Rl ./
           make build
-      - name: Checkout repository
-        uses: actions/checkout@v3.0.0
+          echo "(current dir): $PWD" && ls -Rl ./
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
