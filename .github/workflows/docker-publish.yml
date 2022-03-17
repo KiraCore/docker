@@ -52,8 +52,8 @@ jobs:
       - name: Build Docker Images from Docker.src
         shell: bash
         run: |
-          echo "(current dir): $PWD" && ls -Rl ./
           chmod -R 555 ./scripts
+          export SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
           make build
           echo "(current dir): $PWD" && ls -Rl ./
       # Install the cosign tool except on PR
