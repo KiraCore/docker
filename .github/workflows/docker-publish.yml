@@ -31,7 +31,6 @@ jobs:
       # This is used to complete the identity challenge
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
-
     steps:
       - name: Extract branch name on push
         if: github.event_name == 'push'
@@ -48,6 +47,10 @@ jobs:
         run: |
           echo "SOURCE_BRANCH=$(echo ${{ env.REF_BRANCH }} | tr / -)" >> $GITHUB_ENV
           echo "DESTINATION_BRANCH=$(echo ${{ env.BASE_REF_BRANCH }} | tr / -)" >> $GITHUB_ENV
+      - name: Build Docker Images from Docker.src
+        shell: bash
+        run: |
+          make build
       - name: Checkout repository
         uses: actions/checkout@v3.0.0
       # Install the cosign tool except on PR
@@ -102,7 +105,6 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-base.outputs.tags }}
           labels: ${{ steps.meta-base.outputs.labels }}
-
       - name: Build and push Docker cors-anywhere image
         id: build-and-push-cors
         uses: docker/build-push-action@v2.9.0
@@ -112,15 +114,12 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-cors.outputs.tags }}
           labels: ${{ steps.meta-cors.outputs.labels }}
-          build-args: GITHUB_BRANCH=${{ env.SOURCE_BRANCH }}
-
       # This is not the best way to store cosign keys, all must be wiped
       - name: Write signing key to disk
         run: 'echo "$KEY" > cosign.key'
         shell: bash
         env:
           KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
       # repository is public to avoid leaking data.  If you would like to publish
@@ -135,7 +134,6 @@ jobs:
         # against the sigstore community Fulcio instance.
         run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}
         # run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}@${{ steps.build-and-push-base.outputs.digest }}
-
       - name: Sign the published Docker cors-anywhere image
         if: ${{ github.event_name != 'pull_request' }}
         env:
@@ -144,7 +142,6 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.GITHUB_BRANCH }}
-
       # If the secret is safely wiped, then the time its exposed to the build runner is very short
       - name: Remove signing key from disk
         if: always()
