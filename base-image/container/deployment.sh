@@ -14,7 +14,7 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     file build-essential net-tools hashdeep make ca-certificates p7zip-full lsof libglu1-mesa bash gnupg \
     nodejs node-gyp python python3 python3-pip tar unzip xz-utils yarn zip protobuf-compiler golang-goprotobuf-dev \
     golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev clang cmake gcc g++ pkg-config libudev-dev \
-    libusb-1.0-0-dev curl iputils-ping nano jq openssl dos2unix
+    libusb-1.0-0-dev curl iputils-ping nano jq openssl dos2unix upx wine
 
 apt update -y
 apt install -y bc dnsutils psmisc netcat nodejs npm
@@ -22,6 +22,13 @@ apt install -y bc dnsutils psmisc netcat nodejs npm
 # install deb package manager
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
 	apt install nfpm
+
+# install python essentials
+python3 -m pip install --upgrade pip &&\
+ pip3 install crossenv && \
+ pip3 install ECPy && \
+ pip3 install pyinstaller && \
+ pip3 install --upgrade pyinstaller
 
 # define versions of the software to install manually
 ARCHITECTURE=$(uname -m)
