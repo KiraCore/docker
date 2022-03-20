@@ -3,16 +3,9 @@ set -e
 set -x
 . /etc/profile
 
-WORKDIR=$PWD
-UTILS_VER=$(utilsVersion 2> /dev/null || echo "")
+RELEASE_VER="$(grep -Fn -m 1 'Release: ' ./RELEASE.md | rev | cut -d ":" -f1 | rev | xargs | tr -dc '[:alnum:]\-\.' || echo '' | xargs)"
 
-# cd $WORKDIR
-# 
-# CORS_DOCKERFILE=./cors-anywhere/Dockerfile
-# 
-# REF_GITHUB_BRNACH=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD || echo "")
-# ( [ -z "$REF_GITHUB_BRNACH" ] || [ "${REF_GITHUB_BRNACH,,}" == "head" ] ) && REF_GITHUB_BRNACH="${SOURCE_BRANCH}"
-# 
-# rm -fv $CORS_DOCKERFILE
-# REF_GITHUB_BRNACH=${REF_GITHUB_BRNACH//"/"/"\/"}
-# sed "s/\${REF_GITHUB_BRNACH}/$REF_GITHUB_BRNACH/" ${CORS_DOCKERFILE}.src > $CORS_DOCKERFILE
+DOCKERFILE=./cors-anywhere/Dockerfile
+REF_GITHUB_BRNACH=${RELEASE_VER//"/"/"\/"}
+
+sed -i"" "s/\${REF_GITHUB_BRNACH}/$REF_GITHUB_BRNACH/" ${DOCKERFILE}

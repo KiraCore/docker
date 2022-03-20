@@ -1,6 +1,5 @@
-FROM ubuntu:20.04
-# ghcr.io/kiracore/docker/base-image:v0.0.4.0
- 
+FROM ghcr.io/kiracore/docker/base-image:${REF_GITHUB_BRNACH}
+
 # Local Update
 # (rm -fv $KIRA_INFRA/docker/base-image/Dockerfile) && nano $KIRA_INFRA/docker/base-image/Dockerfile
 

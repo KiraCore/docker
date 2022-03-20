@@ -96,7 +96,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}
           tags: |
-            type=raw,value=https://github.com/KiraCore/docker/cors-anywhere:${{ env.RELEASE_VER }}
+            type=raw,value=${{ env.RELEASE_VER }}
           labels: |
             org.opencontainers.image.licenses=AGPLv3
             org.opencontainers.image.url=ghcr.io/kiracore/docker/cors-anywhere:${{ env.RELEASE_VER }}
@@ -108,7 +108,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}
           tags: |
-            type=raw,value=https://github.com/KiraCore/docker/base-image:${{ env.RELEASE_VER }}
+            type=raw,value=${{ env.RELEASE_VER }}
           labels: |
             org.opencontainers.image.licenses=AGPLv3
             org.opencontainers.image.url=ghcr.io/kiracore/docker/base-image:${{ env.RELEASE_VER }}
@@ -120,7 +120,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}
           tags: |
-            type=raw,value=https://github.com/KiraCore/docker/kira-base:${{ env.RELEASE_VER }}
+            type=raw,value=${{ env.RELEASE_VER }}
           labels: |
             org.opencontainers.image.licenses=AGPLv3
             org.opencontainers.image.url=ghcr.io/kiracore/docker/kira-base:${{ env.RELEASE_VER }}
