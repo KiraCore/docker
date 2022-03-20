@@ -6,7 +6,7 @@ FROM ubuntu:20.04
 
 ADD ./container ${SELF_CONTAINER}
 
-RUN chmod -R 777 ${SELF_HOME} && chmod 555 ${ETC_PROFILE} && chmod 555 ${BASHRC}
+# RUN chmod -R 777 ${SELF_HOME} && chmod 555 ${ETC_PROFILE} && chmod 555 ${BASHRC}
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN LC_ALL=C ${BUILD_SCRIPT} && rm -rf /var/lib/apt/lists/*
