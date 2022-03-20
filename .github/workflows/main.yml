@@ -58,6 +58,13 @@ jobs:
           export SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
           make build
           echo "(current dir): $PWD" && ls -Rl ./
+      # ref.: https://github.com/docker/setup-qemu-action, v1.2.0
+      # Example: http://blog.mauriciofreitas.eng.br/docker/2020/12/25/multiarch-docker-build-github-actions-en.html
+      - name: Setup QEMU (multi-platform)
+        id: qemu
+        uses: docker/setup-qemu-action@27d0a4f181a40b142cce983c5393082c365d1480
+        with:
+          platforms: linux/amd64,linux/arm64
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
