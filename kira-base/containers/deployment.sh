@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-set +e && source /etc/profile &>/dev/null && set -e
 exec 2>&1
 set -x
+set -e
 
 apt-get update -y
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \

@@ -95,6 +95,8 @@ jobs:
         uses: docker/metadata-action@v3.6.2
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}
+          tags: |
+            type=raw,value=https://github.com/KiraCore/docker/cors-anywhere:${{ env.RELEASE_VER }}
           labels: |
             org.opencontainers.image.licenses=AGPLv3
             org.opencontainers.image.url=ghcr.io/kiracore/docker/cors-anywhere:${{ env.RELEASE_VER }}
@@ -105,16 +107,20 @@ jobs:
         uses: docker/metadata-action@v3.6.2
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}
+          tags: |
+            type=raw,value=https://github.com/KiraCore/docker/base-image:${{ env.RELEASE_VER }}
           labels: |
             org.opencontainers.image.licenses=AGPLv3
             org.opencontainers.image.url=ghcr.io/kiracore/docker/base-image:${{ env.RELEASE_VER }}
             org.opencontainers.image.source=https://github.com/KiraCore/docker/base-image
             org.opencontainers.image.title=base-image
       - name: Extract Docker metadata for kira-image
-        id: kira-base
+        id: meta-kira
         uses: docker/metadata-action@v3.6.2
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}
+          tags: |
+            type=raw,value=https://github.com/KiraCore/docker/kira-base:${{ env.RELEASE_VER }}
           labels: |
             org.opencontainers.image.licenses=AGPLv3
             org.opencontainers.image.url=ghcr.io/kiracore/docker/kira-base:${{ env.RELEASE_VER }}
@@ -149,8 +155,8 @@ jobs:
           context: ./kira-base
           file: ./kira-base/Dockerfile
           push: ${{ env.PUBLISH_IMAGES }}
-          tags: ${{ steps.meta-cors.outputs.tags }}
-          labels: ${{ steps.meta-cors.outputs.labels }}
+          tags: ${{ steps.meta-kira.outputs.tags }}
+          labels: ${{ steps.meta-kira.outputs.labels }}
           platforms: linux/amd64,linux/arm64
       # This is not the best way to store cosign keys, all must be wiped
       - name: Write signing key to disk
@@ -171,9 +177,9 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: |
-          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}
-          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.GITHUB_BRANCH }}
-          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.GITHUB_BRANCH }}
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.RELEASE_VER }}
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.RELEASE_VER }}
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.RELEASE_VER }}
       # If the secret is safely wiped, then the time its exposed to the build runner is very short
       - name: Remove signing key from disk
         if: always()

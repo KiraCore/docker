@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 exec 2>&1
 set -e
 set -x

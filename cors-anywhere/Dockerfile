@@ -8,14 +8,14 @@ ENV SELF_HOME=/self/home
 ENV SELF_CONTAINER=${SELF_HOME}/container
 ENV BUILD_SCRIPT=${SELF_CONTAINER}/deployment.sh
 
+RUN mkdir -p ${SELF_CONTAINER} 
+
 ADD ./container ${SELF_CONTAINER}
 
 RUN chmod -R 777 ${SELF_HOME}
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN LC_ALL=C ${BUILD_SCRIPT} && rm -rf /var/lib/apt/lists/*
-
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 
 ENV PORT="8080"
 ENV CORSANYWHERE_WHITELIST="https://*.kira.network,http://*.kira.network"

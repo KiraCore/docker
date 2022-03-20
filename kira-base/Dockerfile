@@ -4,7 +4,6 @@ FROM ubuntu:20.04
 # (rm -fv $KIRA_INFRA/docker/base-image/Dockerfile) && nano $KIRA_INFRA/docker/base-image/Dockerfile
 
 ENV ETC_PROFILE="/etc/profile"
-ENV BASHRC="/root/.bashrc"
 ENV JOURNAL_LOGS="/var/log/journal"
 ENV COMMON_DIR="/common"
 ENV COMMON_READ="/common_ro"
@@ -32,7 +31,9 @@ ENV FAILURE_END_FILE=${SELF_HOME}/failure_end
 ENV SUCCESS_START_FILE=${SELF_HOME}/success_start
 ENV SUCCESS_END_FILE=${SELF_HOME}/success_end
 ENV MAINTENANCE_FILE=${SELF_HOME}/maintenence
+
 ENV SEKAID_HOME=/root/.sekaid
+ENV INTERX_HOME=/root/.interx
 ENV SEKAID_CONFIG="${SEKAID_HOME}/config"
 ENV SEKAID_DATA="${SEKAID_HOME}/data"
 
@@ -40,11 +41,11 @@ ENV KIRA_BIN="/usr/kira/bin"
 ENV PATH="${PATH}:${KIRA_BIN}"
 ENV COMMON_LOGS="${COMMON_DIR}/logs"
 
-RUN mkdir -p ${KIRA_BIN} ${COMMON_READ} ${SNAP_DIR} ${SELF_HOME} ${SELF_SCRIPTS} ${SELF_CONFIGS} ${SELF_UPDATE} ${SELF_UPDATE_TMP} ${SELF_LOGS} ${SELF_CONTAINER} ${SEKAID_HOME} ${COMMON_DIR}
+RUN mkdir -p ${KIRA_BIN} ${COMMON_READ} ${SNAP_DIR} ${SELF_HOME} ${SELF_SCRIPTS} ${SELF_CONFIGS} ${SELF_UPDATE} ${SELF_UPDATE_TMP} ${SELF_LOGS} ${SELF_CONTAINER} ${SEKAID_HOME} ${INTERX_HOME} ${COMMON_DIR}
 
 ADD ./container ${SELF_CONTAINER}
 
-RUN chmod -Rv 777 ${SELF_HOME} ${ETC_PROFILE} ${BASHRC}
+RUN chmod -Rv 777 ${SELF_HOME} ${ETC_PROFILE}
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN LC_ALL=C ${BUILD_SCRIPT} && rm -rf /var/lib/apt/lists/*
