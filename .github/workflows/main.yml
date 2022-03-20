@@ -170,7 +170,8 @@ jobs:
       # transparency data even for private images, pass --force to cosign below.
       # https://github.com/sigstore/cosign
       - name: Sign the published Docker base-image image
-        if: ${{ env.PUBLISH_IMAGES }}
+        # if booleans handling 
+        if: env.PUBLISH_IMAGES == 'true' || env.PUBLISH_IMAGES == true
         env:
           COSIGN_EXPERIMENTAL: "true"
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
