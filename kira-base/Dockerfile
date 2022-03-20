@@ -3,7 +3,6 @@ FROM ubuntu:20.04
 # Local Update
 # (rm -fv $KIRA_INFRA/docker/base-image/Dockerfile) && nano $KIRA_INFRA/docker/base-image/Dockerfile
 
-ENV ETC_PROFILE="/etc/profile"
 ENV JOURNAL_LOGS="/var/log/journal"
 ENV COMMON_DIR="/common"
 ENV COMMON_READ="/common_ro"
@@ -41,11 +40,11 @@ ENV KIRA_BIN="/usr/kira/bin"
 ENV PATH="${PATH}:${KIRA_BIN}"
 ENV COMMON_LOGS="${COMMON_DIR}/logs"
 
-RUN mkdir -p ${KIRA_BIN} ${COMMON_READ} ${SNAP_DIR} ${SELF_HOME} ${SELF_SCRIPTS} ${SELF_CONFIGS} ${SELF_UPDATE} ${SELF_UPDATE_TMP} ${SELF_LOGS} ${SELF_CONTAINER} ${SEKAID_HOME} ${INTERX_HOME} ${COMMON_DIR}
+RUN mkdir -p ${SELF_CONTAINER} ${KIRA_BIN} ${COMMON_READ} ${SNAP_DIR} ${SELF_HOME} ${SELF_SCRIPTS} ${SELF_CONFIGS} ${SELF_UPDATE} ${SELF_UPDATE_TMP} ${SELF_LOGS} ${SEKAID_HOME} ${INTERX_HOME} ${COMMON_DIR}
 
 ADD ./container ${SELF_CONTAINER}
 
-RUN chmod -Rv 777 ${SELF_HOME} ${ETC_PROFILE}
+RUN chmod -Rv 777 ${SELF_HOME}
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN LC_ALL=C ${BUILD_SCRIPT} && rm -rf /var/lib/apt/lists/*
