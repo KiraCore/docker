@@ -134,8 +134,7 @@ jobs:
         with:
           context: ./base-image
           file: ./base-image/Dockerfile
-          pull: true
-          push: ${{ env.PUBLISH_IMAGES }}
+          push: true
           tags: ${{ steps.meta-base.outputs.tags }}
           labels: ${{ steps.meta-base.outputs.labels }}
           platforms: linux/amd64,linux/arm64
@@ -145,7 +144,6 @@ jobs:
         with:
           context: ./cors-anywhere
           file: ./cors-anywhere/Dockerfile
-          pull: true
           push: ${{ env.PUBLISH_IMAGES }}
           tags: ${{ steps.meta-cors.outputs.tags }}
           labels: ${{ steps.meta-cors.outputs.labels }}
@@ -156,7 +154,6 @@ jobs:
         with:
           context: ./kira-base
           file: ./kira-base/Dockerfile
-          pull: true
           push: ${{ env.PUBLISH_IMAGES }}
           tags: ${{ steps.meta-kira.outputs.tags }}
           labels: ${{ steps.meta-kira.outputs.labels }}
