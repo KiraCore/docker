@@ -37,8 +37,8 @@ jobs:
         if: github.event_name == 'push'
         shell: bash
         run: |
-          echo "SOURCE_BRANCH=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
-          echo "DESTINATION_BRANCH=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+          echo "SOURCE_BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+          echo "DESTINATION_BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
       - name: Extract branch name on pull request
         if: github.event_name == 'pull_request'
         env:
@@ -46,14 +46,17 @@ jobs:
           BASE_REF_BRANCH: ${{ github.base_ref }}
         shell: bash
         run: |
-          echo "SOURCE_BRANCH=$(echo ${{ env.REF_BRANCH }} | tr / -)" >> $GITHUB_ENV
-          echo "DESTINATION_BRANCH=$(echo ${{ env.BASE_REF_BRANCH }} | tr / -)" >> $GITHUB_ENV
+          echo "SOURCE_BRANCH=$(echo ${{ env.REF_BRANCH }})" >> $GITHUB_ENV
+          echo "DESTINATION_BRANCH=$(echo ${{ env.BASE_REF_BRANCH }})" >> $GITHUB_ENV
       - name: Checkout repository
         uses: actions/checkout@v3.0.0
       - name: Build Docker Images from Docker.src
         shell: bash
         run: |
-          ( [ "${{ github.event_name }}" == "push" ] && [[ ${{ env.SOURCE_BRANCH }} =~ "^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$" ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
+          RELEASE_VER="$(grep -Fn -m 1 'Release: ' ./RELEASE.md | rev | cut -d ":" -f1 | rev | xargs | tr -dc '[:alnum:]\-\.' || echo '' | xargs)"
+          echo "RELEASE_VER=$RELEASE_VER" >> $GITHUB_ENV
+          git show-branch "remotes/origin/$RELEASE_VER" && echo "TARGET_BRANCH_EXISTS=true" >> $GITHUB_ENV || echo "TARGET_BRANCH_EXISTS=false" >> $GITHUB_ENV
+          ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "${{ github.event_name }}" == "push" ] && [[ ${{ env.SOURCE_BRANCH }} =~ "^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$" ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
           chmod -R 555 ./scripts
           export SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
           make build
@@ -94,7 +97,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}
           labels: |
             org.opencontainers.image.licenses=AGPLv3
-            org.opencontainers.image.url=ghcr.io/kiracore/docker/cors-anywhere:${{ env.GITHUB_BRANCH }}
+            org.opencontainers.image.url=ghcr.io/kiracore/docker/cors-anywhere:${{ env.RELEASE_VER }}
             org.opencontainers.image.source=https://github.com/KiraCore/docker/cors-anywhere
             org.opencontainers.image.title=cors-anywhere
       - name: Extract Docker metadata for base-image
@@ -104,7 +107,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}
           labels: |
             org.opencontainers.image.licenses=AGPLv3
-            org.opencontainers.image.url=ghcr.io/kiracore/docker/base-image:${{ env.GITHUB_BRANCH }}
+            org.opencontainers.image.url=ghcr.io/kiracore/docker/base-image:${{ env.RELEASE_VER }}
             org.opencontainers.image.source=https://github.com/KiraCore/docker/base-image
             org.opencontainers.image.title=base-image
       - name: Extract Docker metadata for kira-image
@@ -114,7 +117,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}
           labels: |
             org.opencontainers.image.licenses=AGPLv3
-            org.opencontainers.image.url=ghcr.io/kiracore/docker/kira-base:${{ env.GITHUB_BRANCH }}
+            org.opencontainers.image.url=ghcr.io/kiracore/docker/kira-base:${{ env.RELEASE_VER }}
             org.opencontainers.image.source=https://github.com/KiraCore/docker/kira-base
             org.opencontainers.image.title=kira-base
       # Build and push Docker image with Buildx (don't push on PR)
