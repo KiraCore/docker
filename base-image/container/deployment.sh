@@ -1,27 +1,7 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 exec 2>&1
 set -e
 set -x
-
-apt-get update -y
-apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-    software-properties-common curl wget git nginx apt-transport-https
-
-echo "APT Update, Update and Intall..."
-apt-get update -y --fix-missing
-apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-    file build-essential net-tools hashdeep make ca-certificates p7zip-full lsof libglu1-mesa bash gnupg \
-    nodejs node-gyp python python3 python3-pip tar unzip xz-utils yarn zip protobuf-compiler golang-goprotobuf-dev \
-    golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev clang cmake gcc g++ pkg-config libudev-dev \
-    libusb-1.0-0-dev curl iputils-ping nano jq openssl dos2unix
-
-apt update -y
-apt install -y bc dnsutils psmisc netcat nodejs npm
-
-# install deb package manager
-echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
-	apt install nfpm
 
 # define versions of the software to install manually
 ARCHITECTURE=$(uname -m)
@@ -32,13 +12,20 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.16.1"
-KIRA_UTILS_BRANCH="v0.0.3"
+TOOLS_VERSION="v0.0.8.0"
 
-cd /tmp && rm -fv ./i.sh && \
- wget https://raw.githubusercontent.com/KiraCore/tools/$KIRA_UTILS_BRANCH/bash-utils/install.sh -O ./i.sh && \
- chmod 555 ./i.sh && ./i.sh "$KIRA_UTILS_BRANCH" "/var/kiraglob" && . /etc/profile && loadGlobEnvs
+echo "Starting core dependency build..."
+apt-get update -y
+apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
+    software-properties-common curl wget git nginx apt-transport-https jq
 
-if [[ "${ARCHITECTURE,,}" == *"arm"* ]] || [[ "${ARCHITECTURE,,}" == *"aarch"* ]] ; then
+echo "INFO: Installing kira-utils..."
+wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/kira-utils.sh" -O ./utils.sh && \
+    FILE_HASH=$(sha256sum ./utils.sh | awk '{ print $1 }' | xargs || echo -n "") && \
+    [ "$FILE_HASH" == "1cfb806eec03956319668b0a4f02f2fcc956ed9800070cda1870decfe2e6206e" ] && \
+    chmod -v 555 ./utils.sh && ./utils.sh utilsSetup ./utils.sh "/var/kiraglob" && . /etc/profile
+
+if [ "$(getArch)" == "arm64" ] ; then
     GOLANG_ARCH="arm64"
     DART_ARCH="arm64"
     CDHELPER_ARCH="arm64"
@@ -46,7 +33,7 @@ if [[ "${ARCHITECTURE,,}" == *"arm"* ]] || [[ "${ARCHITECTURE,,}" == *"aarch"* ]
     DART_EXPECTED_HASH="de9d1c528367f83bbd192bd565af5b7d9d48f76f79baa4c0e4cf64723e3fb8be"
     FLUTTER_EXPECTED_HASH="7e2a28d14d7356a5bbfe516f8a7c9fc0353f85fe69e5cf6af22be2c7c8b45566"
     CDHELPER_EXPECTED_HASH="c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3"
-else
+elif [ "$(getArch)" == "amd64" ] ; then
     GOLANG_ARCH="amd64"
     DART_ARCH="x64"
     CDHELPER_ARCH="x64"
@@ -54,7 +41,35 @@ else
     DART_EXPECTED_HASH="3cc63a0c21500bc5eb9671733843dcc20040b39fdc02f35defcf7af59f88d459"
     FLUTTER_EXPECTED_HASH="7e2a28d14d7356a5bbfe516f8a7c9fc0353f85fe69e5cf6af22be2c7c8b45566"
     CDHELPER_EXPECTED_HASH="082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7"
+else
+    echoErr "ERROR: Uknown architecture $(getArch)"
+    exit 1
 fi
+
+echoInfo "INFO: Updating dpeendecies (2)..."
+apt-get update -y
+
+echoInfo "INFO: Installing core dpeendecies..."
+apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
+    file build-essential net-tools hashdeep make ca-certificates p7zip-full lsof libglu1-mesa bash gnupg \
+    nodejs node-gyp python python3 python3-pip tar unzip xz-utils yarn zip protobuf-compiler golang-goprotobuf-dev \
+    golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev clang cmake gcc g++ pkg-config libudev-dev \
+    libusb-1.0-0-dev curl iputils-ping nano openssl dos2unix
+
+echoInfo "INFO: Updating dpeendecies (3)..."
+apt update -y
+apt install -y bc dnsutils psmisc netcat nodejs npm
+
+echoInfo "INFO: Installing deb package manager..."
+echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
+	apt install nfpm
+
+echoInfo "INFO: Installing python essentials..."
+pip3 install crossenv
+pip3 install ECPy
+pip3 install pyinstaller
+
+echoInfo "INFO: Installing binaries..."
 
 GO_TAR="go$GO_VERSION.${OS_VERSION}-$GOLANG_ARCH.tar.gz"
 FLUTTER_TAR="flutter_${OS_VERSION}_$FLUTTER_VERSION.tar.xz"

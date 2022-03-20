@@ -1,4 +1,4 @@
-Release: `v0.3.0`
+Release: `v0.5.0.0`
 
 Features:
-* Updated KIRA utils to v0.3.0
+* Added kira base image with multi architecture support

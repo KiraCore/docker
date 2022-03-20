@@ -24,3 +24,15 @@ Cosign requires simple initial setup of the signer keys described more precisely
 cosign generate-key-pair
 
 ```
+
+
+# Build
+
+```
+# set env variable to your local repos (will vary depending on the user)
+setGlobEnv DOCKER_REPO "/mnt/c/Users/asmodat/Desktop/KIRA/KIRA-CORE/GITHUB/docker"
+
+cd $DOCKER_REPO
+
+make build
+```
