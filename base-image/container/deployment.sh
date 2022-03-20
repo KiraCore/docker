@@ -4,32 +4,6 @@ exec 2>&1
 set -e
 set -x
 
-apt-get update -y
-apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-    software-properties-common curl wget git nginx apt-transport-https
-
-echo "APT Update, Update and Intall..."
-apt-get update -y --fix-missing
-apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-    file build-essential net-tools hashdeep make ca-certificates p7zip-full lsof libglu1-mesa bash gnupg \
-    nodejs node-gyp python python3 python3-pip tar unzip xz-utils yarn zip protobuf-compiler golang-goprotobuf-dev \
-    golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev clang cmake gcc g++ pkg-config libudev-dev \
-    libusb-1.0-0-dev curl iputils-ping nano jq openssl dos2unix upx wine
-
-apt update -y
-apt install -y bc dnsutils psmisc netcat nodejs npm
-
-# install deb package manager
-echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
-	apt install nfpm
-
-# install python essentials
-python3 -m pip install --upgrade pip &&\
- pip3 install crossenv && \
- pip3 install ECPy && \
- pip3 install pyinstaller && \
- pip3 install --upgrade pyinstaller
-
 # define versions of the software to install manually
 ARCHITECTURE=$(uname -m)
 OS_VERSION=$(uname) && OS_VERSION="${OS_VERSION,,}"
@@ -41,6 +15,13 @@ DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.16.1"
 TOOLS_VERSION="v0.0.8.0"
 
+echo "Starting core dependency build..."
+
+apt-get update -y
+apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
+    software-properties-common curl wget git nginx apt-transport-https
+
+echo "INFO: Installing kira-utils..."
 wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/kira-utils.sh" -O ./utils.sh && \
     FILE_HASH=$(sha256sum ./utils.sh | awk '{ print $1 }' | xargs || echo -n "") && \
     [ "$FILE_HASH" == "1cfb806eec03956319668b0a4f02f2fcc956ed9800070cda1870decfe2e6206e" ] && \
@@ -66,6 +47,29 @@ else
     echoErr "ERROR: Uknown architecture $(getArch)"
     exit 1
 fi
+
+echoInfo "INFO: Installing core dpeendecies..."
+apt-get update -y --fix-missing
+apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
+    file build-essential net-tools hashdeep make ca-certificates p7zip-full lsof libglu1-mesa bash gnupg \
+    nodejs node-gyp python python3 python3-pip tar unzip xz-utils yarn zip protobuf-compiler golang-goprotobuf-dev \
+    golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev clang cmake gcc g++ pkg-config libudev-dev \
+    libusb-1.0-0-dev curl iputils-ping nano jq openssl dos2unix
+
+apt update -y
+apt install -y bc dnsutils psmisc netcat nodejs npm
+
+# install deb package manager
+echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
+	apt install nfpm
+
+echoInfo "INFO: Installing python essentials..."
+
+pip3 install crossenv
+pip3 install ECPy
+pip3 install pyinstaller
+
+echoInfo "INFO: Installing binaries..."
 
 GO_TAR="go$GO_VERSION.${OS_VERSION}-$GOLANG_ARCH.tar.gz"
 FLUTTER_TAR="flutter_${OS_VERSION}_$FLUTTER_VERSION.tar.xz"
