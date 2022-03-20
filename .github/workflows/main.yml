@@ -7,11 +7,11 @@ name: Docker
 
 on:
   push:
-    branches: [ main, dev, v*.*.* ]
+    branches: [ main, dev, v*.*.*, feature/*, bugfix/* ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ main, dev, v*.*.* ]
+    branches: [ main, dev, v*.*.*, feature/*, bugfix/* ]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -19,6 +19,7 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME_BASE: ${{ github.repository }}/base-image
   IMAGE_NAME_CORS: ${{ github.repository }}/cors-anywhere
+  IMAGE_NAME_KIRA: ${{ github.repository }}/kira-base
   GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }} 
 
 jobs:
@@ -52,6 +53,7 @@ jobs:
       - name: Build Docker Images from Docker.src
         shell: bash
         run: |
+          ( [ "${{ github.event_name }}" == "push" ] && [[ ${{ env.SOURCE_BRANCH }} =~ "^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$" ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
           chmod -R 555 ./scripts
           export SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
           make build
@@ -64,8 +66,9 @@ jobs:
         with:
           cosign-release: 'v1.6.0'
       # Workaround: https://github.com/docker/build-push-action/issues/461
+      # ref.: https://github.com/docker/setup-buildx-action, v1.6.0
       - name: Setup Docker buildx
-        uses: docker/setup-buildx-action@v1.6.0
+        uses: docker/setup-buildx-action@94ab11c41e45d028884a99163086648e898eed25
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
@@ -97,6 +100,16 @@ jobs:
             org.opencontainers.image.url=ghcr.io/kiracore/docker/base-image:${{ env.GITHUB_BRANCH }}
             org.opencontainers.image.source=https://github.com/KiraCore/docker/base-image
             org.opencontainers.image.title=base-image
+      - name: Extract Docker metadata for kira-image
+        id: kira-base
+        uses: docker/metadata-action@v3.6.2
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}
+          labels: |
+            org.opencontainers.image.licenses=AGPLv3
+            org.opencontainers.image.url=ghcr.io/kiracore/docker/kira-base:${{ env.GITHUB_BRANCH }}
+            org.opencontainers.image.source=https://github.com/KiraCore/docker/kira-base
+            org.opencontainers.image.title=kira-base
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
       - name: Build and push Docker base-image image
@@ -105,18 +118,30 @@ jobs:
         with:
           context: ./base-image
           file: ./base-image/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ env.PUBLISH_IMAGES }}
           tags: ${{ steps.meta-base.outputs.tags }}
           labels: ${{ steps.meta-base.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
       - name: Build and push Docker cors-anywhere image
         id: build-and-push-cors
         uses: docker/build-push-action@v2.9.0
         with:
           context: ./cors-anywhere
           file: ./cors-anywhere/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ env.PUBLISH_IMAGES }}
           tags: ${{ steps.meta-cors.outputs.tags }}
           labels: ${{ steps.meta-cors.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+      - name: Build and push Docker kira-base image
+        id: build-and-push-cors
+        uses: docker/build-push-action@v2.9.0
+        with:
+          context: ./kira-base
+          file: ./kira-base/Dockerfile
+          push: ${{ env.PUBLISH_IMAGES }}
+          tags: ${{ steps.meta-cors.outputs.tags }}
+          labels: ${{ steps.meta-cors.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
       # This is not the best way to store cosign keys, all must be wiped
       - name: Write signing key to disk
         run: 'echo "$KEY" > cosign.key'
@@ -129,22 +154,16 @@ jobs:
       # transparency data even for private images, pass --force to cosign below.
       # https://github.com/sigstore/cosign
       - name: Sign the published Docker base-image image
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ env.PUBLISH_IMAGES }}
         env:
           COSIGN_EXPERIMENTAL: "true"
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}
-        # run: cosign sign ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}@${{ steps.build-and-push-base.outputs.digest }}
-      - name: Sign the published Docker cors-anywhere image
-        if: ${{ github.event_name != 'pull_request' }}
-        env:
-          COSIGN_EXPERIMENTAL: "true"
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-        # This step uses the identity token to provision an ephemeral certificate
-        # against the sigstore community Fulcio instance.
-        run: cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.GITHUB_BRANCH }}
+        run: |
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.GITHUB_BRANCH }}
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.GITHUB_BRANCH }}
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.GITHUB_BRANCH }}
       # If the secret is safely wiped, then the time its exposed to the build runner is very short
       - name: Remove signing key from disk
         if: always()
