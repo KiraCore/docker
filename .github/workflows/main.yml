@@ -143,13 +143,10 @@ jobs:
         with:
           context: ./base-image
           file: ./base-image/Dockerfile
-          # local registry only
           load: true
-          # remote registry only
-          # push: true
           tags: localhost:5000/base-image:${{ env.RELEASE_VER }}
-          labels: ${{ steps.meta-base.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
+          # labels: ${{ steps.meta-base.outputs.labels }}
+          # platforms: linux/amd64,linux/arm64
       - name: Build and push Docker base-image image (remote)
         id: build-and-push-base-remote
         uses: docker/build-push-action@v2.9.0
