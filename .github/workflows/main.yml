@@ -64,6 +64,7 @@ jobs:
           echo "RELEASE_VER=$RELEASE_VER" >> $GITHUB_ENV
           git show-branch "remotes/origin/$RELEASE_VER" && echo "TARGET_BRANCH_EXISTS=true" >> $GITHUB_ENV || echo "TARGET_BRANCH_EXISTS=false" >> $GITHUB_ENV
           ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "${{ github.event_name }}" == "push" ] && [[ ${{ env.SOURCE_BRANCH }} =~ "^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$" ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
+          ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "${{ github.event_name }}" == "push" ] && [[ ${{ env.SOURCE_BRANCH }} =~ "^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$" ]] ) && echo "LOAD_IMAGES=false" >> $GITHUB_ENV || echo "LOAD_IMAGES=true" >> $GITHUB_ENV 
           chmod -R 555 ./scripts
           export SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
           make build
@@ -136,7 +137,7 @@ jobs:
             org.opencontainers.image.title=kira-base
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Docker base-image image
+      - name: Build and push Docker base-image image (local)
         id: build-and-push-base
         uses: docker/build-push-action@v2.9.0
         with:
@@ -144,10 +145,19 @@ jobs:
           file: ./base-image/Dockerfile
           # local registry only
           load: true
-          push: true
-          tags: |
-            ${{ steps.meta-base.outputs.tags }}
-            localhost:5000/base-image:${{ env.RELEASE_VER }}
+          # remote registry only
+          # push: true
+          tags: localhost:5000/base-image:${{ env.RELEASE_VER }}
+          labels: ${{ steps.meta-base.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+      - name: Build and push Docker base-image image (remote)
+        id: build-and-push-base
+        uses: docker/build-push-action@v2.9.0
+        with:
+          context: ./base-image
+          file: ./base-image/Dockerfile
+          push: ${{ env.PUBLISH_IMAGES }}
+          tags: ${{ steps.meta-base.outputs.tags }}
           labels: ${{ steps.meta-base.outputs.labels }}
           platforms: linux/amd64,linux/arm64
       - name: Build and push Docker cors-anywhere image
