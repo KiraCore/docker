@@ -69,6 +69,14 @@ pip3 install crossenv
 pip3 install ECPy
 pip3 install pyinstaller
 
+echoInfo "INFO: Installing services runner..."
+SYSCTRL_DESTINATION=/usr/local/bin/systemctl2
+safeWget /usr/local/bin/systemctl2 \
+ https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/9cbe1a00eb4bdac6ff05b96ca34ec9ed3d8fc06c/files/docker/systemctl.py \
+ "e02e90c6de6cd68062dadcc6a20078c34b19582be0baf93ffa7d41f5ef0a1fdd" && \
+chmod +x $SYSCTRL_DESTINATION && \
+systemctl2 --version
+
 echoInfo "INFO: Installing binaries..."
 
 GO_TAR="go$GO_VERSION.${OS_VERSION}-$GOLANG_ARCH.tar.gz"
@@ -126,7 +134,42 @@ FILE_HASH=$(sha256 ./$DART_ZIP) && [ "$FILE_HASH" != "$DART_EXPECTED_HASH" ] && 
 
 unzip ./$DART_ZIP -d $FLUTTER_CACHE
 
+echoInfo "INFO: Updating dpeendecies (4)..."
+apt update -y
+apt install -y android-sdk
+
+echoInfo "INFO: Installing cmdline-tools"
+
+ANDROID_HOME="/usr/lib/android-sdk"
+setGlobEnv ANDROID_HOME "$ANDROID_HOME"
+setGlobEnv ANDROID_SDK_ROOT "$ANDROID_HOME"
+setGlobPath "${ANDROID_HOME}/tools"
+setGlobPath "${ANDROID_HOME}/platform-tools"
+loadGlobEnvs
+
+SDKTOOLS_ZIP=./commandlinetools.zip
+SDKTOOLS_DIR=$ANDROID_HOME/cmdline-tools/tools
+safeWget $SDKTOOLS_ZIP \
+ https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip \
+ d71f75333d79c9c6ef5c39d3456c6c58c613de30e6a751ea0dbd433e8f8b9cbf && \
+ rm -rfv ./commandlinetools && unzip ./$SDKTOOLS_ZIP -d ./commandlinetools && \
+ rm -rfv $SDKTOOLS_DIR && mkdir -p $SDKTOOLS_DIR && \
+ cp -rfv ./commandlinetools/cmdline-tools/* $SDKTOOLS_DIR 
+
+setGlobPath $SDKTOOLS_DIR/bin 
+loadGlobEnvs
+sdkmanager --version
+
+yes | sdkmanager --licenses
+
+sdkmanager --list
+sdkmanager --update
+sdkmanager --install "cmdline-tools;latest"
+
+echoInfo "INFO: Configuring flutter..."
+
 flutter config --enable-web
 flutter doctor
+flutter doctor --android-licenses
 
 rm -fv $DART_ZIP $FLUTTER_TAR
