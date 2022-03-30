@@ -60,27 +60,31 @@ jobs:
         shell: bash
         run: |
           chmod -Rv 555 ./scripts
+          SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
+          GITHUB_EVENT_NAME=${{ github.event_name }}
+          echo "GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME" >> $GITHUB_ENV
           RELEASE_VER=$(./scripts/version.sh) && echo "RELEASE_VER=$RELEASE_VER" >> $GITHUB_ENV
           echo "DEFAULT_BRANCH=${{ github.event.repository.default_branch }}" >> $GITHUB_ENV
           REPOSITORY_NAME="${{ github.event.repository.name }}" && echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $GITHUB_ENV
           echo "MASTER_REF=$(git ls-remote https://github.com/kiracore/$REPOSITORY_NAME | head -1 | sed 's/HEAD//')" >> $GITHUB_ENV
           git ls-remote https://github.com/kiracore/$REPOSITORY_NAME | egrep -q "refs/tags/${RELEASE_VER}$" && echo "RELEASE_EXISTS=true" >> $GITHUB_ENV || echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
           git show-branch "remotes/origin/$RELEASE_VER" && echo "TARGET_BRANCH_EXISTS=true" >> $GITHUB_ENV || echo "TARGET_BRANCH_EXISTS=false" >> $GITHUB_ENV
-          ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "${{ github.event_name }}" == "push" ] && [[ ${{ env.SOURCE_BRANCH }} =~ "^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$" ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
-          ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "${{ github.event_name }}" == "push" ] && [[ ${{ env.SOURCE_BRANCH }} =~ "^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$" ]] ) && echo "LOAD_IMAGES=false" >> $GITHUB_ENV || echo "LOAD_IMAGES=true" >> $GITHUB_ENV 
+          ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH" =~ ^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$ ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
+          ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH" =~ ^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$ ]] ) && echo "LOAD_IMAGES=false" >> $GITHUB_ENV || echo "LOAD_IMAGES=true" >> $GITHUB_ENV 
       - name: Print debug data before publishing
         shell: bash
         run: |
-          echo " Default branch: ${{ env.DEFAULT_BRANCH }}"
-          echo "  Master refer.: ${{ env.MASTER_REF }}"
-          echo "Repository name: ${{ env.REPOSITORY_NAME }}"
-          echo "  Source branch: ${{ env.SOURCE_BRANCH }}"
-          echo "Release version: ${{ env.RELEASE_VER }}"
-          echo " Release exists: ${{ env.RELEASE_EXISTS }}"
-          echo "     Event name: ${{ github.event_name }}"
-          echo "  Target Exists: ${{ env.TARGET_BRANCH_EXISTS }}"
-          echo " Publish Images: ${{ env.PUBLISH_IMAGES }}"
-          echo "    Load Images: ${{ env.LOAD_IMAGES }}"
+          echo "    Default branch: ${{ env.DEFAULT_BRANCH }}"
+          echo "     Master refer.: ${{ env.MASTER_REF }}"
+          echo "   Repository name: ${{ env.REPOSITORY_NAME }}"
+          echo "     Source branch: ${{ env.SOURCE_BRANCH }}"
+          echo "Destination branch: ${{ env.DESTINATION_BRANCH }}"
+          echo "   Release version: ${{ env.RELEASE_VER }}"
+          echo "    Release exists: ${{ env.RELEASE_EXISTS }}"
+          echo "        Event name: ${{ github.event_name }}"
+          echo "     Target Exists: ${{ env.TARGET_BRANCH_EXISTS }}"
+          echo "    Publish Images: ${{ env.PUBLISH_IMAGES }}"
+          echo "       Load Images: ${{ env.LOAD_IMAGES }}"
       - name: Build Docker Images from Docker.src
         shell: bash
         run: |
