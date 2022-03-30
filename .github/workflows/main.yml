@@ -38,6 +38,9 @@ jobs:
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
     steps:
+      # ref.: https://github.com/actions/checkout, v3.0.0
+      - name: Checkout repository
+        uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846
       - name: Extract branch name on push
         if: github.event_name == 'push'
         shell: bash
@@ -53,17 +56,32 @@ jobs:
         run: |
           echo "SOURCE_BRANCH=$(echo ${{ env.REF_BRANCH }})" >> $GITHUB_ENV
           echo "DESTINATION_BRANCH=$(echo ${{ env.BASE_REF_BRANCH }})" >> $GITHUB_ENV
-      - name: Checkout repository
-        uses: actions/checkout@v3.0.0
-      - name: Build Docker Images from Docker.src
+      - name: Setup Variables
         shell: bash
         run: |
-          RELEASE_VER="$(grep -Fn -m 1 'Release: ' ./RELEASE.md | rev | cut -d ":" -f1 | rev | xargs | tr -dc '[:alnum:]\-\.' || echo '' | xargs)"
-          echo "RELEASE_VER=$RELEASE_VER" >> $GITHUB_ENV
+          chmod -Rv 555 ./scripts
+          RELEASE_VER=$(./scripts/version.sh) && echo "RELEASE_VER=$RELEASE_VER" >> $GITHUB_ENV
+          REPOSITORY_NAME="${{ github.event.repository.name }}" && echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $GITHUB_ENV
+          echo "MASTER_REF=$(git ls-remote https://github.com/kiracore/$REPOSITORY_NAME | head -1 | sed 's/HEAD//')" >> $GITHUB_ENV
+          git ls-remote https://github.com/kiracore/$REPOSITORY_NAME | egrep -q "refs/tags/${RELEASE_VER}$" && echo "RELEASE_EXISTS=true" >> $GITHUB_ENV || echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
           git show-branch "remotes/origin/$RELEASE_VER" && echo "TARGET_BRANCH_EXISTS=true" >> $GITHUB_ENV || echo "TARGET_BRANCH_EXISTS=false" >> $GITHUB_ENV
           ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "${{ github.event_name }}" == "push" ] && [[ ${{ env.SOURCE_BRANCH }} =~ "^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$" ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
           ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "${{ github.event_name }}" == "push" ] && [[ ${{ env.SOURCE_BRANCH }} =~ "^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$" ]] ) && echo "LOAD_IMAGES=false" >> $GITHUB_ENV || echo "LOAD_IMAGES=true" >> $GITHUB_ENV 
-          chmod -R 555 ./scripts
+      - name: Print debug data before publishing
+        shell: bash
+        run: |
+          echo "Repository name: ${{ env.REPOSITORY_NAME }}"
+          echo "  Source branch: ${{ env.SOURCE_BRANCH }}"
+          echo "  Master refer.: ${{ env.MASTER_REF }}"
+          echo "Release version: ${{ env.RELEASE_VER }}"
+          echo " Release exists: ${{ env.RELEASE_EXISTS }}"
+          echo "     Event name: ${{ github.event_name }}"
+          echo "  Target Exists: ${{ env.TARGET_BRANCH_EXISTS }}"
+          echo " Publish Images: ${{ env.PUBLISH_IMAGES }}"
+          echo "    Load Images: ${{ env.LOAD_IMAGES }}"
+      - name: Build Docker Images from Docker.src
+        shell: bash
+        run: |
           export SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
           make build
           echo "(current dir): $PWD" && ls -Rl ./
@@ -151,7 +169,7 @@ jobs:
         with:
           context: ./base-image
           file: ./base-image/Dockerfile
-          push: ${{ env.PUBLISH_IMAGES }}
+          push: true
           tags: ${{ steps.meta-base.outputs.tags }}
           labels: ${{ steps.meta-base.outputs.labels }}
           platforms: linux/amd64,linux/arm64

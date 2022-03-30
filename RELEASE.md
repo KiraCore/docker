@@ -1,4 +1,5 @@
-Release: `v0.6.0.0`
 
-Features:
+## KIRA DOCKER IMAGES
+
+### Features:
 * Added support for android-sdk
