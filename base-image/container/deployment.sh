@@ -176,6 +176,7 @@ echoInfo "INFO: Installing FVM"
 dart pub global activate fvm
 
 setGlobPath "$HOME/.pub-cache/bin"
+loadGlobEnvs
 
 fvm --version
 
