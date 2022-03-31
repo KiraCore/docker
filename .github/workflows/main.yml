@@ -60,6 +60,7 @@ jobs:
         shell: bash
         run: |
           chmod -Rv 555 ./scripts
+          VERSION_REGEX="^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$"
           SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
           GITHUB_EVENT_NAME=${{ github.event_name }}
           echo "GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME" >> $GITHUB_ENV
@@ -69,8 +70,9 @@ jobs:
           echo "MASTER_REF=$(git ls-remote https://github.com/kiracore/$REPOSITORY_NAME | head -1 | sed 's/HEAD//')" >> $GITHUB_ENV
           git ls-remote https://github.com/kiracore/$REPOSITORY_NAME | egrep -q "refs/tags/${RELEASE_VER}$" && echo "RELEASE_EXISTS=true" >> $GITHUB_ENV || echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
           git show-branch "remotes/origin/$RELEASE_VER" && echo "TARGET_BRANCH_EXISTS=true" >> $GITHUB_ENV || echo "TARGET_BRANCH_EXISTS=false" >> $GITHUB_ENV
-          ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH" =~ ^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$ ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
-          ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH" =~ ^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$ ]] ) && echo "LOAD_IMAGES=false" >> $GITHUB_ENV || echo "LOAD_IMAGES=true" >> $GITHUB_ENV 
+          ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
+          ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] ) && echo "LOAD_IMAGES=false" >> $GITHUB_ENV || echo "LOAD_IMAGES=true" >> $GITHUB_ENV 
+          (  [[ "$RELEASE_VER" =~ $VERSION_REGEX ]] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] && [[ "$SOURCE_BRANCH" != $RELEASE_VER ]] ) && echo "ERROR: Source branch name must be the same version" && exit 1
       - name: Print debug data before publishing
         shell: bash
         run: |

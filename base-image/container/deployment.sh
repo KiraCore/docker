@@ -172,4 +172,11 @@ flutter config --enable-web
 flutter doctor
 flutter doctor --android-licenses
 
+echoInfo "INFO: Installing FVM"
+dart pub global activate fvm
+
+setGlobPath "$HOME/.pub-cache/bin"
+
+fvm --version
+
 rm -fv $DART_ZIP $FLUTTER_TAR
