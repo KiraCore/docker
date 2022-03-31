@@ -59,7 +59,7 @@ jobs:
       - name: Setup Variables
         shell: bash
         run: |
-          chmod -Rv 555 ./scripts || echo "ERROR: failed to chmod scripts directory"
+          chmod -v +x ./scripts/version.sh
           VERSION_REGEX="^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$"
           SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
           GITHUB_EVENT_NAME=${{ github.event_name }}
@@ -91,6 +91,7 @@ jobs:
         shell: bash
         run: |
           export SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
+          chmod -v +x ./scripts/build.sh
           make build
           echo "(current dir): $PWD" && ls -Rl ./
       # ref.: https://github.com/docker/setup-qemu-action, v1.2.0
