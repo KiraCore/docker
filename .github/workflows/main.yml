@@ -65,7 +65,7 @@ jobs:
           SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
           GITHUB_EVENT_NAME=${{ github.event_name }}
           echo "GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME" >> $GITHUB_ENV
-          RELEASE_VER=$(./scripts/version.sh) && echo "RELEASE_VER=$RELEASE_VER" >> $GITHUB_ENV
+          RELEASE_VER="$(./scripts/version.sh)" && echo "RELEASE_VER=$RELEASE_VER" >> $GITHUB_ENV
           echo "DEFAULT_BRANCH=${{ github.event.repository.default_branch }}" >> $GITHUB_ENV
           REPOSITORY_NAME="${{ github.event.repository.name }}" && echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $GITHUB_ENV
           echo "MASTER_REF=$(git ls-remote https://github.com/kiracore/$REPOSITORY_NAME | head -1 | sed 's/HEAD//')" >> $GITHUB_ENV
@@ -73,7 +73,7 @@ jobs:
           git show-branch "remotes/origin/$RELEASE_VER" && echo "TARGET_BRANCH_EXISTS=true" >> $GITHUB_ENV || echo "TARGET_BRANCH_EXISTS=false" >> $GITHUB_ENV
           ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
           ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] ) && echo "LOAD_IMAGES=false" >> $GITHUB_ENV || echo "LOAD_IMAGES=true" >> $GITHUB_ENV 
-          if [[ "$RELEASE_VER" =~ $VERSION_REGEX ]] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] && [[ "$SOURCE_BRANCH" != "$RELEASE_VER" ]] ; then 
+          if [[ "$RELEASE_VER" =~ $VERSION_REGEX ]] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] && [ "$SOURCE_BRANCH" != "$RELEASE_VER" ] ; then 
             echo "ERROR: Source branch name must be the same version"
             exit 1
           else
