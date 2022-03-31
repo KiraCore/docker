@@ -73,7 +73,12 @@ jobs:
           git show-branch "remotes/origin/$RELEASE_VER" && echo "TARGET_BRANCH_EXISTS=true" >> $GITHUB_ENV || echo "TARGET_BRANCH_EXISTS=false" >> $GITHUB_ENV
           ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
           ( [ "$RELEASE_VER" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] ) && echo "LOAD_IMAGES=false" >> $GITHUB_ENV || echo "LOAD_IMAGES=true" >> $GITHUB_ENV 
-          (  [[ "$RELEASE_VER" =~ $VERSION_REGEX ]] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] && [[ "$SOURCE_BRANCH" != $RELEASE_VER ]] ) && echo "ERROR: Source branch name must be the same version" && exit 1
+          if [[ "$RELEASE_VER" =~ $VERSION_REGEX ]] && [[ "$SOURCE_BRANCH" =~ $VERSION_REGEX ]] && [[ "$SOURCE_BRANCH" != "$RELEASE_VER" ]] ; then 
+            echo "ERROR: Source branch name must be the same version"
+            exit 1
+          else
+            echo "INFO: Variables setup succeeded"
+          fi
       - name: Print debug data before publishing
         shell: bash
         run: |
