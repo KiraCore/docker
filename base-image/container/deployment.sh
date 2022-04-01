@@ -85,7 +85,7 @@ DART_ZIP="dartsdk-${OS_VERSION}-$DART_ARCH-release.zip"
 CDHELPER_ZIP="CDHelper-${OS_VERSION}-$CDHELPER_ARCH.zip"
 
 echoInfo "INFO: Installing CDHelper tool"
-cd /tmp && safeWget ./$CDHELPER_ZIP "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/$CDHELPER_ZIP" "$CDHELPER_EXPECTED_HASH"
+cd /tmp && safeWget ./$CDHELPER_ZIP "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/$CDHELPER_ZIP" "$CDHELPER_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
  
 INSTALL_DIR="/usr/local/bin/CDHelper"
 rm -rfv $INSTALL_DIR
@@ -108,7 +108,7 @@ curl https://sh.rustup.rs -sSf | bash -s -- -y
 cargo --version
 
 echoInfo "INFO: Setting up essential flutter dependencies..."
-cd /tmp && safeWget ./$FLUTTER_TAR https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/${OS_VERSION}/$FLUTTER_TAR "$FLUTTER_EXPECTED_HASH"
+cd /tmp && safeWget ./$FLUTTER_TAR https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/${OS_VERSION}/$FLUTTER_TAR "$FLUTTER_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
 
 mkdir -p /usr/lib # make sure flutter root directory exists
 tar -C /usr/lib -xf ./$FLUTTER_TAR
@@ -121,7 +121,7 @@ touch $FLUTTER_CACHE/.dartignore
 touch $FLUTTER_CACHE/engine-dart-sdk.stamp
 
 echoInfo "INFO: Installing latest dart $DART_ARCH version $DART_VERSION https://dart.dev/get-dart/archive ..."
-cd /tmp && safeWget $DART_ZIP https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL_PATH/$DART_VERSION/sdk/$DART_ZIP "$DART_EXPECTED_HASH"
+cd /tmp && safeWget $DART_ZIP https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL_PATH/$DART_VERSION/sdk/$DART_ZIP "$DART_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
 unzip ./$DART_ZIP -d $FLUTTER_CACHE
 
 echoInfo "INFO: Updating dpeendecies (4)..."
@@ -139,18 +139,18 @@ loadGlobEnvs
 
 SDKTOOLS_ZIP=./commandlinetools.zip
 SDKTOOLS_DIR=$ANDROID_HOME/cmdline-tools/tools
-safeWget $SDKTOOLS_ZIP \
- https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip \
- d71f75333d79c9c6ef5c39d3456c6c58c613de30e6a751ea0dbd433e8f8b9cbf && \
- rm -rf ./commandlinetools && unzip ./$SDKTOOLS_ZIP -d ./commandlinetools && \
- rm -rf $SDKTOOLS_DIR && mkdir -p $SDKTOOLS_DIR && \
- cp -rf ./commandlinetools/cmdline-tools/* $SDKTOOLS_DIR 
+safeWget "$SDKTOOLS_ZIP" "https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip" \
+ d71f75333d79c9c6ef5c39d3456c6c58c613de30e6a751ea0dbd433e8f8b9cbf ./log || ( cat ./log && exit 1 )
+
+ rm -rf ./commandlinetools && unzip ./$SDKTOOLS_ZIP -d ./commandlinetools
+ rm -rf $SDKTOOLS_DIR && mkdir -p $SDKTOOLS_DIR
+ cp -rf ./commandlinetools/cmdline-tools/* $SDKTOOLS_DIR
 
 setGlobPath $SDKTOOLS_DIR/bin 
 loadGlobEnvs
 sdkmanager --version
 
-yes | sdkmanager --licenses
+yes | sdkmanager --licenses > ./log || ( cat ./log && exit 1 )
 
 sdkmanager --list
 sdkmanager --update
