@@ -23,7 +23,7 @@ echo "INFO: Installing kira-utils..."
 wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/kira-utils.sh" -O ./utils.sh && \
     FILE_HASH=$(sha256sum ./utils.sh | awk '{ print $1 }' | xargs || echo -n "") && \
     [ "$FILE_HASH" == "1cfb806eec03956319668b0a4f02f2fcc956ed9800070cda1870decfe2e6206e" ] && \
-    chmod -v 555 ./utils.sh && ./utils.sh utilsSetup ./utils.sh "/var/kiraglob" && . /etc/profile
+    chmod 555 ./utils.sh && ./utils.sh utilsSetup ./utils.sh "/var/kiraglob" && . /etc/profile
 
 if [ "$(getArch)" == "arm64" ] ; then
     GOLANG_ARCH="arm64"
@@ -91,7 +91,7 @@ INSTALL_DIR="/usr/local/bin/CDHelper"
 rm -rfv $INSTALL_DIR
 mkdir -pv $INSTALL_DIR
 unzip $CDHELPER_ZIP -d $INSTALL_DIR
-chmod -R -v 555 $INSTALL_DIR
+chmod -R 555 $INSTALL_DIR
  
 ls -l /bin/CDHelper || echo "INFO: Symlink not found"
 rm /bin/CDHelper || echo "INFO: Failed to remove old symlink"
@@ -115,7 +115,7 @@ tar -C /usr/lib -xf ./$FLUTTER_TAR
 
 echoInfo "INFO: Setting up essential dart dependencies..."
 FLUTTER_CACHE=$FLUTTERROOT/bin/cache
-rm -rfv $FLUTTER_CACHE/dart-sdk
+rm -rf $FLUTTER_CACHE/dart-sdk
 mkdir -p $FLUTTER_CACHE # make sure flutter cache direcotry exists & essential files which prevent automatic update
 touch $FLUTTER_CACHE/.dartignore
 touch $FLUTTER_CACHE/engine-dart-sdk.stamp
@@ -142,9 +142,9 @@ SDKTOOLS_DIR=$ANDROID_HOME/cmdline-tools/tools
 safeWget $SDKTOOLS_ZIP \
  https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip \
  d71f75333d79c9c6ef5c39d3456c6c58c613de30e6a751ea0dbd433e8f8b9cbf && \
- rm -rfv ./commandlinetools && unzip ./$SDKTOOLS_ZIP -d ./commandlinetools && \
- rm -rfv $SDKTOOLS_DIR && mkdir -p $SDKTOOLS_DIR && \
- cp -rfv ./commandlinetools/cmdline-tools/* $SDKTOOLS_DIR 
+ rm -rf ./commandlinetools && unzip ./$SDKTOOLS_ZIP -d ./commandlinetools && \
+ rm -rf $SDKTOOLS_DIR && mkdir -p $SDKTOOLS_DIR && \
+ cp -rf ./commandlinetools/cmdline-tools/* $SDKTOOLS_DIR 
 
 setGlobPath $SDKTOOLS_DIR/bin 
 loadGlobEnvs
