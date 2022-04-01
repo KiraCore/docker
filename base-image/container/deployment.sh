@@ -15,9 +15,9 @@ DART_VERSION="2.16.1"
 TOOLS_VERSION="v0.0.8.0"
 
 echo "Starting core dependency build..."
-apt-get update -y
+apt-get update -y > ./log || ( cat ./log && exit 1 )
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-    software-properties-common curl wget git nginx apt-transport-https jq
+    software-properties-common curl wget git nginx apt-transport-https jq > ./log || ( cat ./log && exit 1 )
 
 echo "INFO: Installing kira-utils..."
 wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/kira-utils.sh" -O ./utils.sh && \
@@ -54,11 +54,11 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     file build-essential net-tools hashdeep make ca-certificates p7zip-full lsof libglu1-mesa bash gnupg \
     nodejs node-gyp python python3 python3-pip tar unzip xz-utils yarn zip protobuf-compiler golang-goprotobuf-dev \
     golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev clang cmake gcc g++ pkg-config libudev-dev \
-    libusb-1.0-0-dev curl iputils-ping nano openssl dos2unix
+    libusb-1.0-0-dev curl iputils-ping nano openssl dos2unix > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Updating dpeendecies (3)..."
-apt update -y
-apt install -y bc dnsutils psmisc netcat nodejs npm
+apt update -y > ./log || ( cat ./log && exit 1 )
+apt install -y bc dnsutils psmisc netcat nodejs npm > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Installing deb package manager..."
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
@@ -73,8 +73,9 @@ echoInfo "INFO: Installing services runner..."
 SYSCTRL_DESTINATION=/usr/local/bin/systemctl2
 safeWget /usr/local/bin/systemctl2 \
  https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/9cbe1a00eb4bdac6ff05b96ca34ec9ed3d8fc06c/files/docker/systemctl.py \
- "e02e90c6de6cd68062dadcc6a20078c34b19582be0baf93ffa7d41f5ef0a1fdd" && \
-chmod +x $SYSCTRL_DESTINATION && \
+ "e02e90c6de6cd68062dadcc6a20078c34b19582be0baf93ffa7d41f5ef0a1fdd" > ./log || ( cat ./log && exit 1 )
+
+chmod +x $SYSCTRL_DESTINATION
 systemctl2 --version
 
 echoInfo "INFO: Installing binaries..."
@@ -90,7 +91,7 @@ cd /tmp && safeWget ./$CDHELPER_ZIP "https://github.com/asmodat/CDHelper/release
 INSTALL_DIR="/usr/local/bin/CDHelper"
 rm -rfv $INSTALL_DIR
 mkdir -pv $INSTALL_DIR
-unzip $CDHELPER_ZIP -d $INSTALL_DIR
+unzip $CDHELPER_ZIP -d $INSTALL_DIR > ./log || ( cat ./log && exit 1 )
 chmod -R 555 $INSTALL_DIR
  
 ls -l /bin/CDHelper || echo "INFO: Symlink not found"
@@ -122,11 +123,11 @@ touch $FLUTTER_CACHE/engine-dart-sdk.stamp
 
 echoInfo "INFO: Installing latest dart $DART_ARCH version $DART_VERSION https://dart.dev/get-dart/archive ..."
 cd /tmp && safeWget $DART_ZIP https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL_PATH/$DART_VERSION/sdk/$DART_ZIP "$DART_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
-unzip ./$DART_ZIP -d $FLUTTER_CACHE
+unzip ./$DART_ZIP -d $FLUTTER_CACHE > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Updating dpeendecies (4)..."
-apt update -y
-apt install -y android-sdk
+apt update -y > ./log || ( cat ./log && exit 1 )
+apt install -y android-sdk > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Installing cmdline-tools"
 
@@ -142,7 +143,7 @@ SDKTOOLS_DIR=$ANDROID_HOME/cmdline-tools/tools
 safeWget "$SDKTOOLS_ZIP" "https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip" \
  d71f75333d79c9c6ef5c39d3456c6c58c613de30e6a751ea0dbd433e8f8b9cbf ./log || ( cat ./log && exit 1 )
 
- rm -rf ./commandlinetools && unzip ./$SDKTOOLS_ZIP -d ./commandlinetools
+ rm -rf ./commandlinetools && unzip ./$SDKTOOLS_ZIP -d ./commandlinetools > ./log || ( cat ./log && exit 1 )
  rm -rf $SDKTOOLS_DIR && mkdir -p $SDKTOOLS_DIR
  cp -rf ./commandlinetools/cmdline-tools/* $SDKTOOLS_DIR
 
@@ -152,9 +153,8 @@ sdkmanager --version
 
 yes | sdkmanager --licenses > ./log || ( cat ./log && exit 1 )
 
-sdkmanager --list
-sdkmanager --update
-sdkmanager --install "cmdline-tools;latest"
+sdkmanager --update > ./log || ( cat ./log && exit 1 )
+sdkmanager --install "cmdline-tools;latest" > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Configuring flutter..."
 

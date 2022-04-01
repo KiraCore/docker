@@ -39,3 +39,9 @@ OS_VERSION=linux && \
  echo "Release arm64: $(sha256sum ./$GO_TAR_ARM64 | awk '{ print $1 }')"
 ```
 
+## Run Container Locally
+```
+
+docker run -i -t    /bin/bash
+```
+
