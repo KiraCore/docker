@@ -85,11 +85,7 @@ DART_ZIP="dartsdk-${OS_VERSION}-$DART_ARCH-release.zip"
 CDHELPER_ZIP="CDHelper-${OS_VERSION}-$CDHELPER_ARCH.zip"
 
 echoInfo "INFO: Installing CDHelper tool"
-cd /tmp && rm -f -v ./$CDHELPER_ZIP && \
- wget "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/$CDHELPER_ZIP" && \
- FILE_HASH=$(sha256 ./$CDHELPER_ZIP) && [ "$FILE_HASH" != "$CDHELPER_EXPECTED_HASH" ] && \
- echoNErr "\nDANGER: Failed to check integrity hash of the CDHelper tool !!!\nERROR: Expected hash: $CDHELPER_EXPECTED_HASH, but got $FILE_HASH\n" && \
- sleep 2 && exit 1
+cd /tmp && safeWget ./$CDHELPER_ZIP "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/$CDHELPER_ZIP" "$CDHELPER_EXPECTED_HASH"
  
 INSTALL_DIR="/usr/local/bin/CDHelper"
 rm -rfv $INSTALL_DIR
@@ -103,18 +99,11 @@ ln -s $INSTALL_DIR/CDHelper /bin/CDHelper || echo "INFO: CDHelper symlink alread
 CDHelper version
 
 echoInfo "INFO: Installing latest go $GOLANG_ARCH version $GO_VERSION https://golang.org/doc/install ..."
-cd /tmp && wget https://dl.google.com/go/$GO_TAR && \
- FILE_HASH=$(sha256 ./$GO_TAR) && [ "$FILE_HASH" != "$GO_EXPECTED_HASH" ] && \
- echoNErr "\nDANGER: Failed to check integrity hash of the go tool !!!\nERROR: Expected hash: $GO_EXPECTED_HASH, but got $FILE_HASH\n" && \
- sleep 2 && exit 1
-
+cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR "$GO_EXPECTED_HASH"
 tar -C /usr/local -xvf $GO_TAR &>/dev/null
 
 echoInfo "INFO: Setting up essential flutter dependencies..."
-cd /tmp && wget https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/${OS_VERSION}/$FLUTTER_TAR && \
- FILE_HASH=$(sha256 ./$FLUTTER_TAR) && [ "$FILE_HASH" != "$FLUTTER_EXPECTED_HASH" ] && \
- echoNErr "\nDANGER: Failed to check integrity hash of the Flutter tool !!!\nERROR: Expected hash: $FLUTTER_EXPECTED_HASH, but got $FILE_HASH\n" && \
- sleep 2 && exit 1
+cd /tmp && safeWget ./$FLUTTER_TAR https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/${OS_VERSION}/$FLUTTER_TAR "$FLUTTER_EXPECTED_HASH"
 
 mkdir -p /usr/lib # make sure flutter root directory exists
 tar -C /usr/lib -xvf ./$FLUTTER_TAR
@@ -127,11 +116,7 @@ touch $FLUTTER_CACHE/.dartignore
 touch $FLUTTER_CACHE/engine-dart-sdk.stamp
 
 echoInfo "INFO: Installing latest dart $DART_ARCH version $DART_VERSION https://dart.dev/get-dart/archive ..."
-cd /tmp && wget https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL_PATH/$DART_VERSION/sdk/$DART_ZIP && \
-FILE_HASH=$(sha256 ./$DART_ZIP) && [ "$FILE_HASH" != "$DART_EXPECTED_HASH" ] && \
- echoNErr "\nDANGER: Failed to check integrity hash of the Dart tool !!!\nERROR: Expected hash: $DART_EXPECTED_HASH, but got $FILE_HASH\n" && \
- sleep 2 && exit 1
-
+cd /tmp && safeWget $DART_ZIP https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL_PATH/$DART_VERSION/sdk/$DART_ZIP "$DART_EXPECTED_HASH"
 unzip ./$DART_ZIP -d $FLUTTER_CACHE
 
 echoInfo "INFO: Updating dpeendecies (4)..."
@@ -172,12 +157,18 @@ flutter config --enable-web
 flutter doctor
 flutter doctor --android-licenses
 
-echoInfo "INFO: Installing FVM"
+echoInfo "INFO: Installing FVM..."
 dart pub global activate fvm
 
 setGlobPath "$HOME/.pub-cache/bin"
 loadGlobEnvs
 
-fvm --version
+fvm flutter --version
+fvm config --cache-path "$FLUTTER_CACHE"
+fvm config
 
+fvm install 2.5.3
+fvm use 2.5.3 --force
+
+echoInfo "INFO: Cleanup..."
 rm -fv $DART_ZIP $FLUTTER_TAR
