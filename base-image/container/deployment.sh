@@ -100,13 +100,18 @@ CDHelper version
 
 echoInfo "INFO: Installing latest go $GOLANG_ARCH version $GO_VERSION https://golang.org/doc/install ..."
 cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR "$GO_EXPECTED_HASH"
-tar -C /usr/local -xvf $GO_TAR &>/dev/null
+tar -C /usr/local -xf $GO_TAR &>/dev/null
+go version
+
+echoInfo "INFO: Installing rust..."
+curl https://sh.rustup.rs -sSf | bash -s -- -y
+cargo --version
 
 echoInfo "INFO: Setting up essential flutter dependencies..."
 cd /tmp && safeWget ./$FLUTTER_TAR https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/${OS_VERSION}/$FLUTTER_TAR "$FLUTTER_EXPECTED_HASH"
 
 mkdir -p /usr/lib # make sure flutter root directory exists
-tar -C /usr/lib -xvf ./$FLUTTER_TAR
+tar -C /usr/lib -xf ./$FLUTTER_TAR
 
 echoInfo "INFO: Setting up essential dart dependencies..."
 FLUTTER_CACHE=$FLUTTERROOT/bin/cache
