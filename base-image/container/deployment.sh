@@ -13,6 +13,7 @@ FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.16.1"
 TOOLS_VERSION="v0.0.8.0"
+IPFS_VERSION="v0.12.1"
 
 echo "Starting core dependency build..."
 apt-get update -y > ./log || ( cat ./log && exit 1 )
@@ -29,18 +30,22 @@ if [ "$(getArch)" == "arm64" ] ; then
     GOLANG_ARCH="arm64"
     DART_ARCH="arm64"
     CDHELPER_ARCH="arm64"
+    IPFS_ARCH="arm64"
     GO_EXPECTED_HASH="57a9171682e297df1a5bd287be056ed0280195ad079af90af16dcad4f64710cb"
     DART_EXPECTED_HASH="de9d1c528367f83bbd192bd565af5b7d9d48f76f79baa4c0e4cf64723e3fb8be"
     FLUTTER_EXPECTED_HASH="7e2a28d14d7356a5bbfe516f8a7c9fc0353f85fe69e5cf6af22be2c7c8b45566"
     CDHELPER_EXPECTED_HASH="c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3"
+    IPFS_EXPECTED_HASH="791fdc09d0e3d6f05d0581454b09e8c1d55cef4515170b695ff94075af183edf"
 elif [ "$(getArch)" == "amd64" ] ; then
     GOLANG_ARCH="amd64"
     DART_ARCH="x64"
     CDHELPER_ARCH="x64"
+    IPFS_ARCH="amd64"
     GO_EXPECTED_HASH="980e65a863377e69fd9b67df9d8395fd8e93858e7a24c9f55803421e453f4f99"
     DART_EXPECTED_HASH="3cc63a0c21500bc5eb9671733843dcc20040b39fdc02f35defcf7af59f88d459"
     FLUTTER_EXPECTED_HASH="7e2a28d14d7356a5bbfe516f8a7c9fc0353f85fe69e5cf6af22be2c7c8b45566"
     CDHELPER_EXPECTED_HASH="082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7"
+    IPFS_EXPECTED_HASH="bd4ab982bf2a50a7e8fc4493bdb0960d7271b27ec1e6d74ef68df404d16b2228"
 else
     echoErr "ERROR: Uknown architecture $(getArch)"
     exit 1
@@ -173,7 +178,18 @@ fvm config --cache-path "$FLUTTER_CACHE"
 fvm config
 
 fvm install 2.5.3
-fvm use 2.5.3 --force
+
+echoInfo "INFO: Intstalling IPFS..."
+IPFS_TAR="go-ipfs_${IPFS_VERSION}_linux-${IPFS_ARCH}.tar.gz"
+cd /tmp && safeWget $IPFS_TAR "https://dist.ipfs.io/go-ipfs/${IPFS_VERSION}/$IPFS_TAR" "$IPFS_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
+
+tar -xzf $IPFS_TAR && ./go-ipfs/install.sh
+ipfs --version
+ipfs init
+
+echoInfo "INFO: Installing chromium..."
+add-apt-repository -y ppa:system76/pop
+apt install -y chromium
 
 echoInfo "INFO: Cleanup..."
-rm -fv $DART_ZIP $FLUTTER_TAR
+rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR

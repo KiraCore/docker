@@ -39,9 +39,21 @@ OS_VERSION=linux && \
  echo "Release arm64: $(sha256sum ./$GO_TAR_ARM64 | awk '{ print $1 }')"
 ```
 
-## Run Container Locally
+## Check IPFS Version
+```
+OS_VERSION=linux && \
+ IPFS_VERSION="v0.12.1" && \
+ IPFS_TAR_X64="go-ipfs_${IPFS_VERSION}_${OS_VERSION}-amd64.tar.gz" && \
+ IPFS_TAR_ARM64="go-ipfs_${IPFS_VERSION}_${OS_VERSION}-arm64.tar.gz" && \
+ wget https://dist.ipfs.io/go-ipfs/${IPFS_VERSION}/$IPFS_TAR_X64 && \
+ wget https://dist.ipfs.io/go-ipfs/${IPFS_VERSION}/$IPFS_TAR_ARM64 && \
+ echo "  Release x64: $(sha256sum ./$IPFS_TAR_X64 | awk '{ print $1 }')" && \
+ echo "Release arm64: $(sha256sum ./$IPFS_TAR_ARM64 | awk '{ print $1 }')"
 ```
 
-docker run -i -t    /bin/bash
+## Run Container Locally
+```
+docker pull ghcr.io/kiracore/docker/base-image:v0.8.0.0
+docker run -i -t ghcr.io/kiracore/docker/base-image:v0.8.0.0 /bin/bash
 ```
 
