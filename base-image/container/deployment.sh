@@ -64,7 +64,8 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
 echoInfo "INFO: Updating dpeendecies (3)..."
 add-apt-repository -y ppa:system76/pop
 apt update -y > ./log || ( cat ./log && exit 1 )
-apt install -y bc dnsutils psmisc netcat nodejs npm chromium > ./log || ( cat ./log && exit 1 )
+rm -fv /var/cache/apt/archives/chromium*
+apt install -f -y bc dnsutils psmisc netcat nodejs npm chromium > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Installing deb package manager..."
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
