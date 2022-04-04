@@ -52,7 +52,7 @@ else
 fi
 
 echoInfo "INFO: Updating dpeendecies (2)..."
-apt-get update -y
+apt-get update -y > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Installing core dpeendecies..."
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
@@ -62,8 +62,9 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     libusb-1.0-0-dev curl iputils-ping nano openssl dos2unix > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Updating dpeendecies (3)..."
+add-apt-repository -y ppa:system76/pop
 apt update -y > ./log || ( cat ./log && exit 1 )
-apt install -y bc dnsutils psmisc netcat nodejs npm > ./log || ( cat ./log && exit 1 )
+apt install -y bc dnsutils psmisc netcat nodejs npm chromium > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Installing deb package manager..."
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
@@ -187,9 +188,6 @@ tar -xzf $IPFS_TAR && ./go-ipfs/install.sh
 ipfs --version
 ipfs init
 
-echoInfo "INFO: Installing chromium..."
-add-apt-repository -y ppa:system76/pop
-apt install -y chromium
 
 echoInfo "INFO: Cleanup..."
 rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR
