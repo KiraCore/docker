@@ -190,20 +190,22 @@ ipfs init
 echoInfo "INFO: Updating dpeendecies (4)..."
 # ref.: http://ftp.debian.org/debian/pool/main/c/chromium/
 add-apt-repository -y ppa:system76/pop
-apt update -y > ./log || ( cat ./log && exit 1 )
+apt update -y > ./log || ( cat ./log && exit 1 ) > ./log || ( cat ./log && exit 1 )
 rm -fv /var/cache/apt/archives/chromium*
-apt install -f -y chromium > ./log || ( echoWarn "WARNING: Chromium might NOT be available on ARM64!!!" && && cat ./log )
+apt install -f -y chromium > ./log || ( echoWarn "WARNING: chromium might NOT be available on $(getArch)" && cat ./log )
 
 CHROME_VERSION=$(chromium --version || echo "")
 if ($(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
-    apt install -f -y libappindicator1 fonts-liberation chromium-browser || ( echoWarn "WARNING: Chromium might NOT be available on ARM64!!!" && && cat ./log )
+    add-apt-repository -y ppa:saiarcot895/chromium-dev > ./log || ( cat ./log && exit 1 )
+    apt update -y > ./log || ( cat ./log && exit 1 )
+    apt install -f -y chromium-browser || ( echoWarn "WARNING: chromium-browser might NOT be available on $(getArch)" && cat ./log )
     CHROME_VERSION=$(chromium-browser --version || echo "")
+    CHROME_EXECUTABLE=$(which chromium-browser || echo "")
 else
     CHROME_EXECUTABLE=$(which chromium)
 fi
 
-CHROME_EXECUTABLE=$(which chromium-browser || echo "")
-if [ -z "$CHROME_EXECUTABLE" ] ; then
+if [ -z "$CHROME_EXECUTABLE" ] || ($(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
     echoErr "ERROR: Failed to find chrome executable"
     exit 1
 else
