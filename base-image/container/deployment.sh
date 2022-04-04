@@ -62,10 +62,8 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     libusb-1.0-0-dev curl iputils-ping nano openssl dos2unix > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Updating dpeendecies (3)..."
-add-apt-repository -y ppa:system76/pop
 apt update -y > ./log || ( cat ./log && exit 1 )
-rm -fv /var/cache/apt/archives/chromium*
-apt install -f -y bc dnsutils psmisc netcat nodejs npm chromium > ./log || ( cat ./log && exit 1 )
+apt install -f -y bc dnsutils psmisc netcat nodejs npm > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Installing deb package manager..."
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
@@ -107,7 +105,7 @@ ln -s $INSTALL_DIR/CDHelper /bin/CDHelper || echo "INFO: CDHelper symlink alread
 CDHelper version
 
 echoInfo "INFO: Installing latest go $GOLANG_ARCH version $GO_VERSION https://golang.org/doc/install ..."
-cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR "$GO_EXPECTED_HASH"
+cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR "$GO_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
 tar -C /usr/local -xf $GO_TAR &>/dev/null
 go version
 
@@ -189,6 +187,13 @@ tar -xzf $IPFS_TAR && ./go-ipfs/install.sh
 ipfs --version
 ipfs init
 
+echoInfo "INFO: Updating dpeendecies (4)..."
+# ref.: http://ftp.debian.org/debian/pool/main/c/chromium/
+add-apt-repository -y ppa:system76/pop
+apt update -y > ./log || ( cat ./log && exit 1 )
+rm -fv /var/cache/apt/archives/chromium*
+apt install -f -y chromium > ./log || echoWarn "WARNING: Chromium might NOT be available on ARM64!!!"
+apt install -f -y libappindicator1 fonts-liberation chromium-browser
 
 echoInfo "INFO: Cleanup..."
 rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR
