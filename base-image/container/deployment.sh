@@ -192,8 +192,23 @@ echoInfo "INFO: Updating dpeendecies (4)..."
 add-apt-repository -y ppa:system76/pop
 apt update -y > ./log || ( cat ./log && exit 1 )
 rm -fv /var/cache/apt/archives/chromium*
-apt install -f -y chromium > ./log || echoWarn "WARNING: Chromium might NOT be available on ARM64!!!"
-apt install -f -y libappindicator1 fonts-liberation chromium-browser
+apt install -f -y chromium > ./log || ( echoWarn "WARNING: Chromium might NOT be available on ARM64!!!" && && cat ./log )
+
+CHROME_VERSION=$(chromium --version || echo "")
+if ($(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
+    apt install -f -y libappindicator1 fonts-liberation chromium-browser || ( echoWarn "WARNING: Chromium might NOT be available on ARM64!!!" && && cat ./log )
+    CHROME_VERSION=$(chromium-browser --version || echo "")
+else
+    CHROME_EXECUTABLE=$(which chromium)
+fi
+
+CHROME_EXECUTABLE=$(which chromium-browser || echo "")
+if [ -z "$CHROME_EXECUTABLE" ] ; then
+    echoErr "ERROR: Failed to find chrome executable"
+    exit 1
+else
+    setGlobEnv CHROME_EXECUTABLE "$CHROME_EXECUTABLE"
+fi
 
 echoInfo "INFO: Cleanup..."
 rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR
