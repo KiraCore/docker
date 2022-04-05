@@ -188,17 +188,22 @@ ipfs --version
 ipfs init
 
 echoInfo "INFO: Updating dpeendecies (4)..."
+apt purge -y chromium  > ./log || echoWarn "WARNING: Failed to remove old chromium or the app did not exist"
+apt purge -y chromium-browser  > ./log || echoWarn "WARNING: Failed to remove old chromium-browser or the app did not exist"
+rm -fv /var/cache/apt/archives/chromium*
+apt --fix-broken install -y
+
 # ref.: http://ftp.debian.org/debian/pool/main/c/chromium/
 add-apt-repository -y ppa:system76/pop
 apt update -y > ./log || ( cat ./log && exit 1 ) > ./log || ( cat ./log && exit 1 )
-rm -fv /var/cache/apt/archives/chromium*
 apt install -f -y chromium > ./log || ( echoWarn "WARNING: chromium might NOT be available on $(getArch)" && cat ./log )
+add-apt-repository -y ppa:saiarcot895/chromium-dev > ./log || ( cat ./log && exit 1 )
+apt update -y > ./log || ( cat ./log && exit 1 )
+apt install -f -y chromium-browser || ( echoWarn "WARNING: chromium-browser might NOT be available on $(getArch)" && cat ./log )
 
+# apt purge -y chromium-browser || echoWarn "WARNING: Failed to remove old chromium-breowser"
 CHROME_VERSION=$(chromium --version || echo "")
 if ($(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
-    add-apt-repository -y ppa:saiarcot895/chromium-dev > ./log || ( cat ./log && exit 1 )
-    apt update -y > ./log || ( cat ./log && exit 1 )
-    apt install -f -y chromium-browser || ( echoWarn "WARNING: chromium-browser might NOT be available on $(getArch)" && cat ./log )
     CHROME_VERSION=$(chromium-browser --version || echo "")
     CHROME_EXECUTABLE=$(which chromium-browser || echo "")
 else
