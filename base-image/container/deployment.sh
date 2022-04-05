@@ -209,7 +209,7 @@ if [ -z "$CHROME_EXECUTABLE" ] || ($(isNullOrWhitespaces "$CHROME_VERSION"))  ; 
     echoErr "ERROR: Failed to find chrome executable"
     exit 1
 else
-    setGlobEnv CHROME_EXECUTABLE "$CHROME_EXECUTABLE"
+    $CHROME_EXECUTABLE --version
 fi
 
 echoInfo "INFO: Cleanup..."
