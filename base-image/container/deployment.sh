@@ -188,26 +188,67 @@ ipfs --version
 ipfs init
 
 echoInfo "INFO: Updating dpeendecies (4)..."
+CHROME_EXECUTABLE=""
+apt purge -y google-chrome  > ./log || echoWarn "WARNING: Failed to remove old goole-chrome or the app did not exist"
 apt purge -y chromium  > ./log || echoWarn "WARNING: Failed to remove old chromium or the app did not exist"
 apt purge -y chromium-browser  > ./log || echoWarn "WARNING: Failed to remove old chromium-browser or the app did not exist"
-rm -fv /var/cache/apt/archives/chromium*
-apt --fix-broken install -y
+rm -rfv /var/cache/apt/archives/chromium* /usr/bin/chromedriver
+apt --fix-broken install -y > ./log || ( cat ./log && exit 1 )
 
 # ref.: http://ftp.debian.org/debian/pool/main/c/chromium/
+apt update -y > ./log || ( cat ./log && exit 1 )
+apt install -y gdebi-core libnss3 libgconf-2-4 libappindicator1 fonts-liberation xvfb libxi6 > ./log || ( cat ./log && exit 1 )
 add-apt-repository -y ppa:system76/pop
-apt update -y > ./log || ( cat ./log && exit 1 ) > ./log || ( cat ./log && exit 1 )
 apt install -f -y chromium > ./log || ( echoWarn "WARNING: chromium might NOT be available on $(getArch)" && cat ./log )
 add-apt-repository -y ppa:saiarcot895/chromium-dev > ./log || ( cat ./log && exit 1 )
 apt update -y > ./log || ( cat ./log && exit 1 )
 apt install -f -y chromium-browser || ( echoWarn "WARNING: chromium-browser might NOT be available on $(getArch)" && cat ./log )
 
-# apt purge -y chromium-browser || echoWarn "WARNING: Failed to remove old chromium-breowser"
-CHROME_VERSION=$(chromium --version || echo "")
-if ($(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
-    CHROME_VERSION=$(chromium-browser --version || echo "")
-    CHROME_EXECUTABLE=$(which chromium-browser || echo "")
+if [ "$(getArch)" == "amd64" ] ; then
+    GOOLGE_CHROME_FILE="google-chrome-stable_current_amd64.deb"
+    wget https://dl.google.com/linux/direct/$GOOLGE_CHROME_FILE
+    gdebi -n ./$GOOLGE_CHROME_FILE
+
+    CHROME_DRIVER_FILE="chromedriver_linux64.zip"
+    wget https://chromedriver.storage.googleapis.com/100.0.4896.20/$CHROME_DRIVER_FILE
+    unzip $CHROME_DRIVER_FILE
+    mv -fv chromedriver /usr/bin/chromedriver
+    chmod +x /usr/bin/chromedriver
+    chromedriver --version
+    CHROMEDRIVER_EXECUTABLE=$(which chromedriver || echo "")
+
+    cat > /etc/systemd/system/chromedriver.service << EOL
+[Unit]
+Description=Local Chrome Integration Test Service
+After=network.target
+[Service]
+MemorySwapMax=0
+Type=simple
+User=root
+WorkingDirectory=/root
+ExecStart=$CHROMEDRIVER_EXECUTABLE --port=4444
+Restart=always
+RestartSec=5
+LimitNOFILE=4096
+[Install]
+WantedBy=default.target
+EOL
+
+fi
+
+CHROME_VERSION=$(google-chrome --version 2> /dev/null || echo "")
+if (! $(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
+    CHROME_VERSION=$(google-chrome --version || echo "")
+    CHROME_EXECUTABLE=$(which google-chrome || echo "")
 else
-    CHROME_EXECUTABLE=$(which chromium)
+    CHROME_VERSION=$(chromium --version 2> /dev/null || echo "")
+    if (! $(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
+        CHROME_VERSION=$(chromium --version || echo "")
+        CHROME_EXECUTABLE=$(which chromium || echo "")
+    else
+        CHROME_VERSION=$(chromium-browser --version 2> /dev/null || echo "")
+        CHROME_EXECUTABLE=$(which chromium-browser || echo "")
+    fi
 fi
 
 if [ -z "$CHROME_EXECUTABLE" ] || ($(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
@@ -216,6 +257,13 @@ if [ -z "$CHROME_EXECUTABLE" ] || ($(isNullOrWhitespaces "$CHROME_VERSION"))  ; 
 else
     $CHROME_EXECUTABLE --version
 fi
+
+echoInfo "INFO: Install firefox..."
+add-apt-repository -y ppa:mozillateam/firefox-next > ./log || ( cat ./log && exit 1 )
+apt update -y > ./log || ( cat ./log && exit 1 )
+apt -y upgrade > ./log || ( cat ./log && exit 1 )
+apt install -y firefox > ./log || ( cat ./log && exit 1 )
+firefox --version
 
 echoInfo "INFO: Cleanup..."
 rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR
