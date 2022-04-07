@@ -157,9 +157,11 @@ loadGlobEnvs
 sdkmanager --version
 
 yes | sdkmanager --licenses > ./log || ( cat ./log && exit 1 )
-
 sdkmanager --update > ./log || ( cat ./log && exit 1 )
-sdkmanager --install "cmdline-tools;latest" > ./log || ( cat ./log && exit 1 )
+
+# NOTE: To find out latest tools versions run 'sdkmanager --list'
+sdkmanager --install "platform-tools" "platforms;android-31" "build-tools;30.0.2" "cmdline-tools;6.0" > ./log || ( cat ./log && exit 1 )
+yes | sdkmanager --licenses > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Configuring flutter..."
 
