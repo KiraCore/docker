@@ -22,7 +22,6 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     ## local registry only
     ## ref.: https://stackoverflow.com/questions/63887031/build-docker-image-locally-in-github-actions-using-docker-build-push-action
@@ -82,6 +81,7 @@ jobs:
       - name: Print debug data before publishing
         shell: bash
         run: |
+          echo "    Docker Version: $(docker --version)"
           echo "    Default branch: ${{ env.DEFAULT_BRANCH }}"
           echo "     Master refer.: ${{ env.MASTER_REF }}"
           echo "   Repository name: ${{ env.REPOSITORY_NAME }}"
@@ -128,10 +128,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       # Extract metadata (tags, labels) for Docker
-      # https://github.com/docker/metadata-action
+      # ref.: https://github.com/docker/metadata-action, v3.7.0
       - name: Extract Docker metadata for cors-anywhere
         id: meta-cors
-        uses: docker/metadata-action@v3.6.2
+        uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}
           tags: |
@@ -143,7 +143,7 @@ jobs:
             org.opencontainers.image.title=cors-anywhere
       - name: Extract Docker metadata for base-image
         id: meta-base
-        uses: docker/metadata-action@v3.6.2
+        uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}
           tags: |
@@ -155,7 +155,7 @@ jobs:
             org.opencontainers.image.title=base-image
       - name: Extract Docker metadata for kira-image
         id: meta-kira
-        uses: docker/metadata-action@v3.6.2
+        uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}
           tags: |
@@ -209,10 +209,10 @@ jobs:
           platforms: linux/amd64,linux/arm64
       # This is not the best way to store cosign keys, all must be wiped
       - name: Write signing key to disk
-        run: 'echo "$KEY" > cosign.key'
         shell: bash
         env:
           KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        run: 'echo "$KEY" > cosign.key'
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
       # repository is public to avoid leaking data.  If you would like to publish
@@ -235,3 +235,9 @@ jobs:
         if: always()
         run: 'shred -vzn 3 cosign.key && rm -fv cosign.key'
         shell: bash
+      - name: Publish to pinata
+        shell: bash
+        run: |
+          KIRA_BASE_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.RELEASE_VER }}"
+          echo "INFO: Pinning Base Image: $KIRA_BASE_IMAGE"
+          echo "TODO: Missing pinata-cli install & upload"

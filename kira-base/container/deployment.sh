@@ -8,8 +8,8 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     software-properties-common curl wget git nginx apt-transport-https
 
 CDHELPER_VERSION="v0.6.51"
-SEKAI_VERSION="v0.1.23-rc.3"
-INTERX_VERSION="v0.4.1-rc.5"
+SEKAI_VERSION="v0.1.25-rc.10"
+INTERX_VERSION="v0.4.2-rc.1"
 TOOLS_VERSION="v0.0.8.0"
 
 cd $KIRA_BIN
@@ -36,21 +36,26 @@ safeWget ./cdhelper.zip \
 
 safeWget ./sekaid.deb \
  "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-amd64.deb" \
-  "dfa9d40b0b28c4fa83714f4dc4f44f70f36e3b1fb444dfab30c1aa764e22646d" && \
+  "8e7f434ac56d76cc9887c095dddb7b87fa9492f26399137133ce53808bc9360e" && \
   dpkg-deb -x ./sekaid.deb ./sekaid-amd64
 safeWget ./sekaid.deb \
  "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-arm64.deb" \
-  "43cd256db392a73ef9173cd8626b1c603bf44189d95b7fdaab64211af1c5f1fc" && \
+  "e6c58e46b22317eb25fcaa1200ceddabd7e7106cf5f4ae8df6772dd8b9420682" && \
   dpkg-deb -x ./sekaid.deb ./sekaid-arm64
 
-safeWget ./interx.deb \
- "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-linux-arm64.deb" \
-  "af63eac487dc78c3c02a75d655c1c0acd1fd951c76d2e7acfa71e8af4a590928" && \
-  dpkg-deb -x ./interx.deb ./interx-arm64
+safeWget ./sekai-utils.sh \
+ "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-utils.sh" \
+  "9695a6f3b79c9d8c86fe7709d7e4a85358ffca1ea06346365e8569a9f368a1fb" && \
+  chmod +x ./sekai-utils.sh && ./sekai-utils.sh sekaiUtilsSetup && . /etc/profile
+
 safeWget ./interx.deb \
  "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-linux-amd64.deb" \
-  "f93c4b8cf80ebb5d717bc52662924b897a51fb5b7dd2158f78e143b9fe6cafda" && \
+  "7103b5d5289911dac922b0840d9742e8772c476c6731e51caef5744f3ad57f12" && \
   dpkg-deb -x ./interx.deb ./interx-amd64
+safeWget ./interx.deb \
+ "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-linux-arm64.deb" \
+  "5096182ef2871ccfb9782373f4fcceb06b08d754c047b6f86fb691eb150607c5" && \
+  dpkg-deb -x ./interx.deb ./interx-arm64
 
 safeWget ./tmconnect.deb \
  "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmconnect-linux-amd64.deb" \
@@ -85,9 +90,10 @@ crossenvLink "$KIRA_BIN/tmkms-key-import-<arch>" "/usr/local/bin/tmkms-key-impor
 crossenvLink "$KIRA_BIN/validator-key-gen-<arch>/bin/validator-key-gen" "/usr/local/bin/validator-key-gen"
 
 echoInfo "Installed CDHelper $(CDhelper version)"
+echoInfo "Installed bash-utils $(utilsVersion)"
+echoInfo "Installed sekai-utils $(sekaiUtilsVersion)"
 echoInfo "Installed sekaid $(sekaid version)"
 echoInfo "Installed interx $(interx version)"
 echoInfo "Installed tmconnect $(tmconnect version)"
 echoInfo "Installed validator-key-gen $(validator-key-gen --version)"
 echoInfo "Installed tmkms-key-import $(tmkms-key-import version)"
-
