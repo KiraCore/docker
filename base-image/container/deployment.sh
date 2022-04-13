@@ -276,12 +276,5 @@ else
     $CHROME_EXECUTABLE --version
 fi
 
-echoInfo "INFO: Install firefox..."
-add-apt-repository -y ppa:mozillateam/firefox-next > ./log || ( cat ./log && exit 1 )
-apt update -y > ./log || ( cat ./log && exit 1 )
-apt -y upgrade > ./log || ( cat ./log && exit 1 )
-apt install -y firefox > ./log || ( cat ./log && exit 1 )
-firefox --version
-
 echoInfo "INFO: Cleanup..."
 rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR
