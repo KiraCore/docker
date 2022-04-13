@@ -23,6 +23,10 @@ Cosign requires simple initial setup of the signer keys described more precisely
 # COSIGN_PUBLIC_KEY
 cosign generate-key-pair
 
+# signing & verifying data blobs
+export COSIGN_PASSWORD="pass"
+cosign sign-blob --key=./cosign.key --output=./nim.sig ./nim
+cosign verify-blob --key=./cosign.pub --signature=./nim.sig ./nim
 ```
 
 

@@ -51,11 +51,12 @@ jobs:
               branch: ${{ env.RELEASE_VER }}
               sha: ${{ env.MASTER_REF }}
           - name: Create PR from feature to version branch
+            # ref. repo-sync/pull-request is broken, using cea2aj/pull-request instead
+            uses: cea2aj/pull-request@84eb0c3478f13651e5649367941b867ca02d7926
             if: |
                ( env.TARGET_BRANCH_EXISTS == false || env.TARGET_BRANCH_EXISTS == 'false' ) && 
                ( env.RELEASE_EXISTS == false || env.RELEASE_EXISTS == 'false' ) &&
                ( startsWith(env.RELEASE_VER, 'v') && contains(env.RELEASE_VER, '.') )
-            uses: repo-sync/pull-request@5ba2c80b97c87b9174c1548141b7acd80f6376e1
             with:
               github_token: ${{ secrets.REPO_ACCESS }}
               source_branch: ${{ env.SOURCE_BRANCH }}

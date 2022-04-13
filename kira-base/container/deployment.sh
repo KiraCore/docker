@@ -10,14 +10,30 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
 CDHELPER_VERSION="v0.6.51"
 SEKAI_VERSION="v0.1.25-rc.10"
 INTERX_VERSION="v0.4.2-rc.1"
-TOOLS_VERSION="v0.0.8.0"
+TOOLS_VERSION="v0.1.0.7"
+COSIGN_VERSION="v1.7.2"
 
 cd $KIRA_BIN
 
-wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/kira-utils.sh" -O ./utils.sh && \
-    FILE_HASH=$(sha256sum ./utils.sh | awk '{ print $1 }' | xargs || echo -n "") && \
-    [ "$FILE_HASH" == "1cfb806eec03956319668b0a4f02f2fcc956ed9800070cda1870decfe2e6206e" ] && \
-    chmod -v 555 ./utils.sh && ./utils.sh utilsSetup ./utils.sh "/var/kiraglob" && . /etc/profile
+echo "INFO: Installing cosign"
+if [[ "$(uname -m)" == *"ar"* ]] ; then ARCH="arm64"; else ARCH="amd64" ; fi && echo $ARCH && \
+PLATFORM=$(uname) && FILE_NAME=$(echo "cosign-${PLATFORM}-${ARCH}" | tr '[:upper:]' '[:lower:]') && \
+ wget https://github.com/sigstore/cosign/releases/download/v1.7.2/$FILE_NAME && chmod +x -v ./$FILE_NAME && \
+ mv -fv ./$FILE_NAME /usr/local/bin/cosign && cosign version
+
+cat > $KIRA_COSIGN_PUB << EOL
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/IrzBQYeMwvKa44/DF/HB7XDpnE+
+f+mU9F/Qbfq25bBWV2+NlYMJv3KvKHNtu3Jknt6yizZjUV4b8WGfKBzFYw==
+-----END PUBLIC KEY-----
+EOL
+
+FILE_NAME="bash-utils.sh" && \
+ wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/${FILE_NAME}" -O ./$FILE_NAME && \
+ wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/${FILE_NAME}.sig" -O ./${FILE_NAME}.sig && \
+ cosign verify-blob --key="$KIRA_COSIGN_PUB" --signature=./${FILE_NAME}.sig ./$FILE_NAME && \
+ chmod -v 555 ./$FILE_NAME && ./$FILE_NAME bashUtilsSetup "/var/kiraglob" && . /etc/profile && \
+ echoInfo "INFO: Installed bash-utils $(bash-utils bashUtilsVersion)"
 
 echoInfo "INFO: APT Update, Update and Intall..."
 apt-get update -y --fix-missing
@@ -57,30 +73,25 @@ safeWget ./interx.deb \
   "5096182ef2871ccfb9782373f4fcceb06b08d754c047b6f86fb691eb150607c5" && \
   dpkg-deb -x ./interx.deb ./interx-arm64
 
-safeWget ./tmconnect.deb \
- "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmconnect-linux-amd64.deb" \
-  "983bec70a9736c866db734cbe84d644c041174fec009946cbe4fb3bc3813cb18" && \
-  dpkg-deb -x ./tmconnect.deb ./tmconnect-amd64
-safeWget ./tmconnect.deb \
- "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmconnect-linux-arm64.deb" \
-  "e3820a4f02ea203c89827e145d6393f5d9b62b093867b75660ebdb8c5aa98e00" && \
-  dpkg-deb -x ./tmconnect.deb ./tmconnect-arm64
+safeWget ./tmconnect.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmconnect-linux-amd64.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./tmconnect.deb ./tmconnect-amd64
+safeWget ./tmconnect.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmconnect-linux-arm64.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./tmconnect.deb ./tmconnect-arm64
 
-safeWget ./validator-key-gen.deb \
- "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/validator-key-gen-linux-amd64.deb" \
-  "ebfb5e4835fd39f55401544b606d9c80c513ea820f37385dbe542e83d10adb57" && \
-  dpkg-deb -x ./validator-key-gen.deb ./validator-key-gen-amd64
-safeWget ./validator-key-gen.deb \
- "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/validator-key-gen-linux-arm64.deb" \
-  "b2e29e3ed2dae5b6915475411850399acebea1ee00a94c6a6e7cdb66f985cde9" && \
-  dpkg-deb -x ./validator-key-gen.deb ./validator-key-gen-arm64
+safeWget ./validator-key-gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/validator-key-gen-linux-amd64.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./validator-key-gen.deb ./validator-key-gen-amd64
+safeWget ./validator-key-gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/validator-key-gen-linux-arm64.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./validator-key-gen.deb ./validator-key-gen-arm64
 
-safeWget ./tmkms-key-import-amd64 \
- "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-linux-amd64" \
-  "7214d252bcbee9cce0c5e0878e37c973427e432349baee0ce3a702f1cf4c6e6d"
-safeWget ./tmkms-key-import-arm64 \
- "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-linux-arm64" \
-  "e05550691546e571f7ea952618ed5bd753c96ab5db4e6e9f2e57cbdb3e751bef"
+safeWget ./tmkms-key-import-amd64 "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-linux-amd64" \
+  "$KIRA_COSIGN_PUB"
+safeWget ./tmkms-key-import-arm64 "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-linux-arm64" \
+  "$KIRA_COSIGN_PUB"
+
+safeWget ./bip39gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/bip39gen-linux-amd64.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./bip39gen.deb ./bip39gen-amd64
+safeWget ./bip39gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/bip39gen-linux-arm64.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./bip39gen.deb ./bip39gen-arm64
 
 crossenvLink "$KIRA_BIN/CDHelper-<arch>/CDHelper" "/usr/local/bin/CDhelper"
 crossenvLink "$KIRA_BIN/sekaid-<arch>/bin/sekaid" "/usr/local/bin/sekaid"
@@ -88,12 +99,14 @@ crossenvLink "$KIRA_BIN/interx-<arch>/bin/interx" "/usr/local/bin/interx"
 crossenvLink "$KIRA_BIN/tmconnect-<arch>/bin/tmconnect" "/usr/local/bin/tmconnect"
 crossenvLink "$KIRA_BIN/tmkms-key-import-<arch>" "/usr/local/bin/tmkms-key-import"
 crossenvLink "$KIRA_BIN/validator-key-gen-<arch>/bin/validator-key-gen" "/usr/local/bin/validator-key-gen"
+crossenvLink "$KIRA_BIN/bip39gen-<arch>/bin/bip39gen" "/usr/local/bin/bip39gen"
 
-echoInfo "Installed CDHelper $(CDhelper version)"
-echoInfo "Installed bash-utils $(utilsVersion)"
-echoInfo "Installed sekai-utils $(sekaiUtilsVersion)"
-echoInfo "Installed sekaid $(sekaid version)"
-echoInfo "Installed interx $(interx version)"
-echoInfo "Installed tmconnect $(tmconnect version)"
-echoInfo "Installed validator-key-gen $(validator-key-gen --version)"
-echoInfo "Installed tmkms-key-import $(tmkms-key-import version)"
+echoInfo "INFO: Installed CDHelper: " && CDhelper version
+echoInfo "INFO: Installed bash-utils: " && bashUtilsVersion
+echoInfo "INFO: Installed sekai-utils: " && sekaiUtilsVersion
+echoInfo "INFO: Installed sekaid: " && sekaid version
+echoInfo "INFO: Installed interx: " && interx version
+echoInfo "INFO: Installed tmconnect: " && tmconnect version
+echoInfo "INFO: Installed validator-key-gen: " && validator-key-gen --version
+echoInfo "INFO: Installed tmkms-key-import: " && tmkms-key-import version
+echoInfo "INFO: Installed bip39gen: " && bip39gen version

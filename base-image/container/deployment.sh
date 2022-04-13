@@ -12,7 +12,7 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.16.1"
-TOOLS_VERSION="v0.0.8.0"
+TOOLS_VERSION="v0.1.0.7"
 IPFS_VERSION="v0.12.1"
 
 echo "Starting core dependency build..."
@@ -20,11 +20,25 @@ apt-get update -y > ./log || ( cat ./log && exit 1 )
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
     software-properties-common curl wget git nginx apt-transport-https jq > ./log || ( cat ./log && exit 1 )
 
-echo "INFO: Installing kira-utils..."
-wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/kira-utils.sh" -O ./utils.sh && \
-    FILE_HASH=$(sha256sum ./utils.sh | awk '{ print $1 }' | xargs || echo -n "") && \
-    [ "$FILE_HASH" == "1cfb806eec03956319668b0a4f02f2fcc956ed9800070cda1870decfe2e6206e" ] && \
-    chmod 555 ./utils.sh && ./utils.sh utilsSetup ./utils.sh "/var/kiraglob" && . /etc/profile
+echo "INFO: Installing cosign"
+if [[ "$(uname -m)" == *"ar"* ]] ; then ARCH="arm64"; else ARCH="amd64" ; fi && echo $ARCH && \
+PLATFORM=$(uname) && FILE_NAME=$(echo "cosign-${PLATFORM}-${ARCH}" | tr '[:upper:]' '[:lower:]') && \
+ wget https://github.com/sigstore/cosign/releases/download/v1.7.2/$FILE_NAME && chmod +x -v ./$FILE_NAME && \
+ mv -fv ./$FILE_NAME /usr/local/bin/cosign && cosign version
+
+cat > $KIRA_COSIGN_PUB << EOL
+-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/IrzBQYeMwvKa44/DF/HB7XDpnE+
+f+mU9F/Qbfq25bBWV2+NlYMJv3KvKHNtu3Jknt6yizZjUV4b8WGfKBzFYw==
+-----END PUBLIC KEY-----
+EOL
+
+FILE_NAME="bash-utils.sh" && \
+ wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/${FILE_NAME}" -O ./$FILE_NAME && \
+ wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/${FILE_NAME}.sig" -O ./${FILE_NAME}.sig && \
+ cosign verify-blob --key="$KIRA_COSIGN_PUB" --signature=./${FILE_NAME}.sig ./$FILE_NAME && \
+ chmod -v 555 ./$FILE_NAME && ./$FILE_NAME bashUtilsSetup "/var/kiraglob" && . /etc/profile && \
+ echoInfo "INFO: Installed bash-utils $(bash-utils bashUtilsVersion)"
 
 if [ "$(getArch)" == "arm64" ] ; then
     GOLANG_ARCH="arm64"
