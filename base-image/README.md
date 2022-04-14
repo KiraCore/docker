@@ -51,6 +51,18 @@ OS_VERSION=linux && \
  echo "Release arm64: $(sha256sum ./$IPFS_TAR_ARM64 | awk '{ print $1 }')"
 ```
 
+## Check COSIGN Version
+```
+OS_VERSION=linux && \
+ VERSION="v1.7.2" && \
+ FILE_X64="cosign-${OS_VERSION}-amd64" && \
+ FILE_ARM64="cosign-${OS_VERSION}-arm64" && \
+ wget https://github.com/sigstore/cosign/releases/download/${VERSION}/$FILE_X64 && \
+ wget https://github.com/sigstore/cosign/releases/download/${VERSION}/$FILE_ARM64 && \
+ echo "  Release x64: $(sha256sum ./$FILE_X64 | awk '{ print $1 }')" && \
+ echo "Release arm64: $(sha256sum ./$FILE_ARM64 | awk '{ print $1 }')"
+```
+
 ## Run Container Locally
 ```
 docker pull ghcr.io/kiracore/docker/base-image:v0.8.0.0

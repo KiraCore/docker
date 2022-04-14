@@ -2,4 +2,4 @@
 ## KIRA DOCKER IMAGES
 
 ### Features:
-* Added support for android-sdk
+* kira-base image now verifies signatures of all dependencies

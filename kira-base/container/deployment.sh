@@ -8,8 +8,8 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     software-properties-common curl wget git nginx apt-transport-https
 
 CDHELPER_VERSION="v0.6.51"
-SEKAI_VERSION="v0.1.25-rc.10"
-INTERX_VERSION="v0.4.2-rc.1"
+SEKAI_VERSION="v0.1.26-rc.11"
+INTERX_VERSION="v0.4.5-rc.4"
 TOOLS_VERSION="v0.1.0.7"
 COSIGN_VERSION="v1.7.2"
 
@@ -18,7 +18,7 @@ cd $KIRA_BIN
 echo "INFO: Installing cosign"
 if [[ "$(uname -m)" == *"ar"* ]] ; then ARCH="arm64"; else ARCH="amd64" ; fi && echo $ARCH && \
 PLATFORM=$(uname) && FILE_NAME=$(echo "cosign-${PLATFORM}-${ARCH}" | tr '[:upper:]' '[:lower:]') && \
- wget https://github.com/sigstore/cosign/releases/download/v1.7.2/$FILE_NAME && chmod +x -v ./$FILE_NAME && \
+ wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/$FILE_NAME && chmod +x -v ./$FILE_NAME && \
  mv -fv ./$FILE_NAME /usr/local/bin/cosign && cosign version
 
 cat > $KIRA_COSIGN_PUB << EOL
@@ -52,28 +52,21 @@ safeWget ./cdhelper.zip \
   "082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7" && \
   unzip ./cdhelper.zip -d "CDHelper-amd64"
 
-safeWget ./sekaid.deb \
- "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-amd64.deb" \
-  "8e7f434ac56d76cc9887c095dddb7b87fa9492f26399137133ce53808bc9360e" && \
-  dpkg-deb -x ./sekaid.deb ./sekaid-amd64
-safeWget ./sekaid.deb \
- "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-arm64.deb" \
-  "e6c58e46b22317eb25fcaa1200ceddabd7e7106cf5f4ae8df6772dd8b9420682" && \
-  dpkg-deb -x ./sekaid.deb ./sekaid-arm64
+safeWget ./sekaid.deb "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-amd64.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./sekaid.deb ./sekaid-amd64
+safeWget ./sekaid.deb "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-arm64.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./sekaid.deb ./sekaid-arm64
 
-safeWget ./sekai-utils.sh \
- "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-utils.sh" \
-  "9695a6f3b79c9d8c86fe7709d7e4a85358ffca1ea06346365e8569a9f368a1fb" && \
-  chmod +x ./sekai-utils.sh && ./sekai-utils.sh sekaiUtilsSetup && . /etc/profile
+safeWget ./sekai-utils.sh "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-utils.sh" \
+  "$KIRA_COSIGN_PUB" && chmod +x ./sekai-utils.sh && ./sekai-utils.sh sekaiUtilsSetup && . /etc/profile
+FILE=/usr/local/bin/sekai-env.sh && \
+safeWget $FILE "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-env.sh" \
+  "$KIRA_COSIGN_PUB" && chmod +x $FILE && echo "source $FILE" >> /etc/profile && . /etc/profile
 
-safeWget ./interx.deb \
- "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-linux-amd64.deb" \
-  "7103b5d5289911dac922b0840d9742e8772c476c6731e51caef5744f3ad57f12" && \
-  dpkg-deb -x ./interx.deb ./interx-amd64
-safeWget ./interx.deb \
- "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-linux-arm64.deb" \
-  "5096182ef2871ccfb9782373f4fcceb06b08d754c047b6f86fb691eb150607c5" && \
-  dpkg-deb -x ./interx.deb ./interx-arm64
+safeWget ./interx.deb "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-linux-amd64.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./interx.deb ./interx-amd64
+safeWget ./interx.deb "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-linux-arm64.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./interx.deb ./interx-arm64
 
 safeWget ./tmconnect.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmconnect-linux-amd64.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./tmconnect.deb ./tmconnect-amd64
