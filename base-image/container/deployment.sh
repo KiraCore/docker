@@ -303,5 +303,15 @@ apt install -y gdebi-core libnss3 libgconf-2-4 libappindicator1 fonts-liberation
 #     $CHROME_EXECUTABLE --version
 # fi
 
+
+########################################
+# Virtualization Manager
+
+# apt install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-manager qemu virt-manager virt-viewer virtinst libvirt-daemon
+
+
+
+######################################
+
 echoInfo "INFO: Cleanup..."
 rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR

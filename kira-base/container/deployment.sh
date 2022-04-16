@@ -103,5 +103,5 @@ echoInfo "INFO: Installed sekaid: " && sekaid version
 echoInfo "INFO: Installed interx: " && interx version
 echoInfo "INFO: Installed tmconnect: " && tmconnect version
 echoInfo "INFO: Installed validator-key-gen: " && validator-key-gen --version
-echoInfo "INFO: Installed tmkms-key-import: " && tmkms-key-import version
+# echoInfo "INFO: Installed tmkms-key-import: " && tmkms-key-import version
 echoInfo "INFO: Installed bip39gen: " && bip39gen version
