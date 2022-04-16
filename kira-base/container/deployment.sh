@@ -78,10 +78,10 @@ safeWget ./validator-key-gen.deb "https://github.com/KiraCore/tools/releases/dow
 safeWget ./validator-key-gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/validator-key-gen-linux-arm64.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./validator-key-gen.deb ./validator-key-gen-arm64
 
-safeWget ./tmkms-key-import-amd64 "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-linux-amd64" \
-  "$KIRA_COSIGN_PUB"
-safeWget ./tmkms-key-import-arm64 "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-linux-arm64" \
-  "$KIRA_COSIGN_PUB"
+# safeWget ./tmkms-key-import-amd64 "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-linux-amd64" \
+#   "$KIRA_COSIGN_PUB"
+# safeWget ./tmkms-key-import-arm64 "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-linux-arm64" \
+#   "$KIRA_COSIGN_PUB"
 
 safeWget ./bip39gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/bip39gen-linux-amd64.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./bip39gen.deb ./bip39gen-amd64
@@ -92,7 +92,7 @@ crossenvLink "$KIRA_BIN/CDHelper-<arch>/CDHelper" "/usr/local/bin/CDhelper"
 crossenvLink "$KIRA_BIN/sekaid-<arch>/bin/sekaid" "/usr/local/bin/sekaid"
 crossenvLink "$KIRA_BIN/interx-<arch>/bin/interx" "/usr/local/bin/interx"
 crossenvLink "$KIRA_BIN/tmconnect-<arch>/bin/tmconnect" "/usr/local/bin/tmconnect"
-crossenvLink "$KIRA_BIN/tmkms-key-import-<arch>" "/usr/local/bin/tmkms-key-import"
+# crossenvLink "$KIRA_BIN/tmkms-key-import-<arch>" "/usr/local/bin/tmkms-key-import"
 crossenvLink "$KIRA_BIN/validator-key-gen-<arch>/bin/validator-key-gen" "/usr/local/bin/validator-key-gen"
 crossenvLink "$KIRA_BIN/bip39gen-<arch>/bin/bip39gen" "/usr/local/bin/bip39gen"
 

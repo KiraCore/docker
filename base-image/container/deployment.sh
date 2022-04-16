@@ -86,9 +86,34 @@ echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sourc
 	apt install nfpm
 
 echoInfo "INFO: Installing python essentials..."
+
+################################################
+# pyinstaller setup (requires python 3.11+)
+add-apt-repository -y ppa:deadsnakes/ppa
+apt update -y
+apt install -y python3.10
+update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 3
+
+apt remove -y --purge python3-apt
+apt autoclean -y
+apt install -y python3-apt python3.10-distutils python3.10-dev
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3.10 get-pip.py
+apt install -y python3.10-venv
+
+python3 -m pip install --upgrade pip setuptools wheel
+pip3 -y uninstall pyinstaller || echoErr "ERROR: Failed to remove default pyinstaller"
+
+git clone https://github.com/pyinstaller/pyinstaller.git -b v4.10
+cd ./pyinstaller/bootloader && python3 ./waf all
+cd .. && python3 setup.py install
+cd ..
+
+pyinstaller --version
+################################################
+
 pip3 install crossenv
 pip3 install ECPy
-pip3 install pyinstaller
 
 echoInfo "INFO: Installing services runner..."
 SYSCTRL_DESTINATION=/usr/local/bin/systemctl2
