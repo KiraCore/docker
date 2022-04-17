@@ -25,6 +25,15 @@ USERNAME=kira
 useradd -s /bin/bash -d /home/kira -m -G sudo $USERNAME
 usermod -aG sudo $USERNAME
 
+echo "Removing file I/O limits..."
+echo "* hard nofile 500000" >> /etc/security/limits.conf
+echo "* soft nofile 500000" >> /etc/security/limits.conf
+echo "root hard nofile 500000" >> /etc/security/limits.conf
+echo "root soft nofile 500000" >> /etc/security/limits.conf
+echo "session required pam_limits.so" >> /etc/security/limits.conf
+echo "fs.file-max = 500000" >> /etc/sysctl.conf
+ulimit -n
+
 echo "INFO: Installing cosign"
 if [[ "$(uname -m)" == *"ar"* ]] ; then ARCH="arm64"; else ARCH="amd64" ; fi && echo $ARCH && \
 PLATFORM=$(uname) && FILE_NAME=$(echo "cosign-${PLATFORM}-${ARCH}" | tr '[:upper:]' '[:lower:]') && \
@@ -270,6 +279,14 @@ EOL
     systemctl enable chromedriver
     # systemctl start chromedriver
     # systemctl -l --no-pager status chromedriver
+
+    # NOTE: dbus-daemon must be working
+    #/usr/bin/dbus-daemon --system
+
+    # Alternatively:
+    # export NO_AT_BRIDGE=1
+    # rm -fv /var/run/dbus/pid
+    # service dbus start
 fi
 
 # CHROME_VERSION=$(google-chrome --version 2> /dev/null || echo "")
@@ -311,7 +328,8 @@ update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 3
 
 apt remove -y --purge python3-apt
 apt autoclean -y
-apt install -y python3-apt python3.6-distutils python3.6-dev python3.10-distutils python3.10-dev
+# NOTE: Python 3.6 does not have distutils
+apt install -y python3-apt python3.6-dev python3.10-distutils python3.10-dev
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python3.10 get-pip.py
 apt install -y python3.6-venv python3.10-venv
