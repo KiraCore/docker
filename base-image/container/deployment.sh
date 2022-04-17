@@ -16,7 +16,6 @@ TOOLS_VERSION="v0.1.0.7"
 IPFS_VERSION="v0.12.1"
 
 echo "Starting core dependency build..."
-add-apt-repository -y ppa:mozillateam/firefox-next
 apt-get update -y > ./log || ( cat ./log && exit 1 )
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
     software-properties-common curl wget git nginx apt-transport-https jq > ./log || ( cat ./log && exit 1 )
@@ -69,6 +68,7 @@ else
 fi
 
 echoInfo "INFO: Updating dpeendecies (2)..."
+add-apt-repository -y ppa:mozillateam/firefox-next
 apt-get update -y > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Installing core dpeendecies..."
