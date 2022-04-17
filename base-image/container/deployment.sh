@@ -34,8 +34,9 @@ echo "root hard nofile 131072" >> /etc/security/limits.conf
 echo "root soft nofile 131072" >> /etc/security/limits.conf
 echo "session required pam_limits.so" >> /etc/security/limits.conf
 echo "DefaultLimitNOFILE=131072" >> /etc/systemd/system.conf
-echo "DefaultLimitNOFILE=131072" >> /etc/systemd/user.conf 
-echo 1024 > /proc/sys/fs/inotify/max_user_instances
+echo "DefaultLimitNOFILE=131072" >> /etc/systemd/user.conf
+# NOTE: For some reason this file is read only
+# echo 1024 > /proc/sys/fs/inotify/max_user_instances
 echo "fs.file-max = 131072" >> /etc/sysctl.conf
 echo "fs.inotify.max_user_instances = 1024" >> /etc/sysctl.conf
 ulimit -n
