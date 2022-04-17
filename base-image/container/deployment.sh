@@ -18,7 +18,12 @@ IPFS_VERSION="v0.12.1"
 echo "Starting core dependency build..."
 apt-get update -y > ./log || ( cat ./log && exit 1 )
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
-    software-properties-common curl wget git nginx apt-transport-https jq > ./log || ( cat ./log && exit 1 )
+    software-properties-common curl wget git nginx apt-transport-https jq sudo > ./log || ( cat ./log && exit 1 )
+
+echo "Creating kira user..."
+USERNAME=kira
+useradd -s /bin/bash -d /home/kira -m -G sudo $USERNAME
+usermod -aG sudo $USERNAME
 
 echo "INFO: Installing cosign"
 if [[ "$(uname -m)" == *"ar"* ]] ; then ARCH="arm64"; else ARCH="amd64" ; fi && echo $ARCH && \
@@ -76,7 +81,7 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     file build-essential net-tools hashdeep make ca-certificates p7zip-full lsof libglu1-mesa bash gnupg \
     nodejs node-gyp python python3 python3-pip tar unzip xz-utils yarn zip protobuf-compiler golang-goprotobuf-dev \
     golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev clang cmake gcc g++ pkg-config libudev-dev \
-    libusb-1.0-0-dev curl iputils-ping nano openssl dos2unix > ./log || ( cat ./log && exit 1 )
+    libusb-1.0-0-dev curl iputils-ping nano openssl dos2unix dbus > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Updating dpeendecies (3)..."
 apt update -y > ./log || ( cat ./log && exit 1 )
@@ -87,13 +92,13 @@ echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sourc
 	apt install nfpm
 
 echoInfo "INFO: Installing services runner..."
-SYSCTRL_DESTINATION=/usr/local/bin/systemctl2
-safeWget /usr/local/bin/systemctl2 \
+SYSCTRL_DESTINATION=/usr/bin/systemctl 
+safeWget $SYSCTRL_DESTINATION \
  https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/9cbe1a00eb4bdac6ff05b96ca34ec9ed3d8fc06c/files/docker/systemctl.py \
  "e02e90c6de6cd68062dadcc6a20078c34b19582be0baf93ffa7d41f5ef0a1fdd" > ./log || ( cat ./log && exit 1 )
 
-chmod +x $SYSCTRL_DESTINATION
-systemctl2 --version
+chmod 755 $SYSCTRL_DESTINATION
+systemctl --version
 
 echoInfo "INFO: Installing binaries..."
 
@@ -233,6 +238,7 @@ if [ "$(getArch)" == "amd64" ] ; then
     GOOLGE_CHROME_FILE="google-chrome-stable_current_amd64.deb"
     wget https://dl.google.com/linux/direct/$GOOLGE_CHROME_FILE
     gdebi -n ./$GOOLGE_CHROME_FILE
+    google-chrome --version
 
     CHROME_DRIVER_FILE="chromedriver_linux64.zip"
     wget https://chromedriver.storage.googleapis.com/100.0.4896.20/$CHROME_DRIVER_FILE
@@ -250,8 +256,8 @@ After=network.target
 [Service]
 MemorySwapMax=0
 Type=simple
-User=root
-WorkingDirectory=/root
+User=$USERNAME
+WorkingDirectory=$KIRA_HOME
 ExecStart=$XVFB_FILE $CHROMEDRIVER_EXECUTABLE --port=4444
 Restart=always
 RestartSec=5
@@ -260,10 +266,10 @@ LimitNOFILE=4096
 WantedBy=default.target
 EOL
 
-    systemctl2 daemon-reload
-    systemctl2 enable chromedriver
-    # systemctl2 restart chromedriver
-    # systemctl2 -l --no-pager status chromedriver
+    systemctl daemon-reload
+    systemctl enable chromedriver
+    # systemctl start chromedriver
+    # systemctl -l --no-pager status chromedriver
 fi
 
 # CHROME_VERSION=$(google-chrome --version 2> /dev/null || echo "")
@@ -305,10 +311,10 @@ update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 3
 
 apt remove -y --purge python3-apt
 apt autoclean -y
-apt install -y python3-apt python3.10-distutils python3.10-dev
+apt install -y python3-apt python3.6-distutils python3.6-dev python3.10-distutils python3.10-dev
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python3.10 get-pip.py
-apt install -y python3.10-venv
+apt install -y python3.6-venv python3.10-venv
 
 python3 -m pip install --upgrade pip setuptools wheel
 pip3 -y uninstall pyinstaller || echoErr "ERROR: Failed to remove default pyinstaller"

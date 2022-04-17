@@ -30,11 +30,18 @@ EOL
 
 chmod -v 444 $KIRA_COSIGN_PUB
 
+echo "Creating kira user..."
+USERNAME=kira
+useradd -s /bin/bash -d /home/kira -m -G sudo $USERNAME
+usermod -aG sudo $USERNAME
+
+echo "INFO: Installing bash utils..."
+
 FILE_NAME="bash-utils.sh" && \
  wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/${FILE_NAME}" -O ./$FILE_NAME && \
  wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/${FILE_NAME}.sig" -O ./${FILE_NAME}.sig && \
  cosign verify-blob --key="$KIRA_COSIGN_PUB" --signature=./${FILE_NAME}.sig ./$FILE_NAME && \
- chmod -v 555 ./$FILE_NAME && ./$FILE_NAME bashUtilsSetup "/var/kiraglob" && . /etc/profile && \
+ chmod -v 755 ./$FILE_NAME && ./$FILE_NAME bashUtilsSetup "/var/kiraglob" && . /etc/profile && \
  echoInfo "INFO: Installed bash-utils $(bash-utils bashUtilsVersion)"
 
 PLATFORM="$(toLower $(uname))"
@@ -50,46 +57,49 @@ else
   echoErr "ERROR: Unsupported architecture '$ARCHITECTURE', expected arm64 or amd64."
 fi
 
-echoInfo "INFO: APT Update, Update and Intall..."
+echoInfo "INFO: APT Update, Update, Intall & Install dependencies..."
 apt-get update -y --fix-missing
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
     file build-essential hashdeep make tar unzip zip p7zip-full curl iputils-ping nano jq python python3 python3-pip \
     bash lsof bc dnsutils psmisc netcat coreutils binutils
 
 safeWget ./cdhelper.zip "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/CDHelper-linux-${CDHELPER_ARCH}.zip" \
-  "$CDHELPER_HASH" && unzip ./cdhelper.zip -d "CDHelper" && cp -rfv "$KIRA_BIN/CDHelper" "$(dirname $CDHELPER_DIR)" && chmod -Rv 555 $CDHELPER_DIR
+  "$CDHELPER_HASH" && unzip ./cdhelper.zip -d "CDHelper" && cp -rfv "$KIRA_BIN/CDHelper" "$(dirname $CDHELPER_DIR)" && chmod -Rv 755 $CDHELPER_DIR
 
 BIN_DEST="/usr/local/bin/sekaid" && \
   safeWget ./sekaid.deb "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-${ARCHITECURE}.deb" \
-  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./sekaid.deb ./sekaid && cp -fv "$KIRA_BIN/sekaid/bin/sekaid" $BIN_DEST && chmod -v 555 $BIN_DEST
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./sekaid.deb ./sekaid && cp -fv "$KIRA_BIN/sekaid/bin/sekaid" $BIN_DEST && chmod -v 755 $BIN_DEST
 
-safeWget ./sekai-utils.sh "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-utils.sh" \
-  "$KIRA_COSIGN_PUB" && chmod +x ./sekai-utils.sh && ./sekai-utils.sh sekaiUtilsSetup && . /etc/profile
+BIN_DEST="/usr/local/bin/kira-utils.sh" && \
+  safeWget ./sekai-utils.sh "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-utils.sh" \
+  "$KIRA_COSIGN_PUB" && chmod -v 755 ./sekai-utils.sh && ./sekai-utils.sh sekaiUtilsSetup && . /etc/profile && chmod -v 755 $BIN_DEST
 
 FILE=/usr/local/bin/sekai-env.sh && \
 safeWget $FILE "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-env.sh" \
-  "$KIRA_COSIGN_PUB" && chmod +x $FILE && echo "source $FILE" >> /etc/profile && . /etc/profile
+  "$KIRA_COSIGN_PUB" && chmod -v 755 $FILE && echo "source $FILE" >> /etc/profile && . /etc/profile
 
 BIN_DEST="/usr/local/bin/interx" && \
 safeWget ./interx.deb "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-linux-${ARCHITECURE}.deb" \
-  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./interx.deb ./interx && cp -fv "$KIRA_BIN/interx/bin/interx" $BIN_DEST && chmod -v 555 $BIN_DEST
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./interx.deb ./interx && cp -fv "$KIRA_BIN/interx/bin/interx" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/tmconnect" && \
   safeWget ./tmconnect.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmconnect-linux-${ARCHITECURE}.deb" \
-  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./tmconnect.deb ./tmconnect && cp -fv "$KIRA_BIN/tmconnect/bin/tmconnect" $BIN_DEST && chmod -v 555 $BIN_DEST
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./tmconnect.deb ./tmconnect && cp -fv "$KIRA_BIN/tmconnect/bin/tmconnect" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/validator-key-gen" && \
   safeWget ./validator-key-gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/validator-key-gen-linux-${ARCHITECURE}.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./validator-key-gen.deb ./validator-key-gen && \
-   cp -fv "$KIRA_BIN/validator-key-gen/bin/validator-key-gen" $BIN_DEST && chmod -v 555 $BIN_DEST
+   cp -fv "$KIRA_BIN/validator-key-gen/bin/validator-key-gen" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/tmkms-key-import" && \
   safeWget ./tmkms-key-import "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-linux-${ARCHITECURE}" \
-  "$KIRA_COSIGN_PUB" && cp -fv "$KIRA_BIN/tmkms-key-import" $BIN_DEST && chmod -v 555 $BIN_DEST
+  "$KIRA_COSIGN_PUB" && cp -fv "$KIRA_BIN/tmkms-key-import" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/bip39gen" && \
   safeWget ./bip39gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/bip39gen-linux-amd64.deb" \
-  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./bip39gen.deb ./bip39gen && cp -fv "$KIRA_BIN/bip39gen/bin/bip39gen" $BIN_DEST && chmod -v 555 $BIN_DEST
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./bip39gen.deb ./bip39gen && cp -fv "$KIRA_BIN/bip39gen/bin/bip39gen" $BIN_DEST && chmod -v 755 $BIN_DEST
+
+loadGlobEnvs
 
 echoInfo "INFO: Installed CDHelper: " && CDHelper version
 echoInfo "INFO: Installed bash-utils: " && bashUtilsVersion
