@@ -26,16 +26,18 @@ useradd -s /bin/bash -d /home/kira -m -G sudo $USERNAME
 usermod -aG sudo $USERNAME
 
 echo "Removing file I/O limits..."
-echo "* hard nofile 524288" >> /etc/security/limits.conf
-echo "* soft nofile 524288" >> /etc/security/limits.conf
-echo "* hard nproc 524288" >> /etc/security/limits.conf
-echo "* soft nproc 524288" >> /etc/security/limits.conf
-echo "root hard nofile 524288" >> /etc/security/limits.conf
-echo "root soft nofile 524288" >> /etc/security/limits.conf
+echo "* hard nofile 131072" >> /etc/security/limits.conf
+echo "* soft nofile 131072" >> /etc/security/limits.conf
+echo "* hard nproc 131072" >> /etc/security/limits.conf
+echo "* soft nproc 131072" >> /etc/security/limits.conf
+echo "root hard nofile 131072" >> /etc/security/limits.conf
+echo "root soft nofile 131072" >> /etc/security/limits.conf
 echo "session required pam_limits.so" >> /etc/security/limits.conf
-echo "fs.file-max = 524288" >> /etc/sysctl.conf
-echo "DefaultLimitNOFILE=524288" >> /etc/systemd/system.conf
-echo "DefaultLimitNOFILE=524288" >> /etc/systemd/user.conf 
+echo "DefaultLimitNOFILE=131072" >> /etc/systemd/system.conf
+echo "DefaultLimitNOFILE=131072" >> /etc/systemd/user.conf 
+echo 1024 > /proc/sys/fs/inotify/max_user_instances
+echo "fs.file-max = 131072" >> /etc/sysctl.conf
+echo "fs.inotify.max_user_instances = 1024" >> /etc/sysctl.conf
 ulimit -n
 
 echo "INFO: Installing cosign"
@@ -232,14 +234,15 @@ apt update -y > ./log || ( cat ./log && exit 1 )
 apt install -y gconf-service gdebi-core libgconf-2-4 libappindicator1 fonts-liberation xvfb libxi6 libx11-xcb1 libxcomposite1 libxcursor1 lsb-release \
  libxdamage1 libxi-dev libxtst-dev libnss3 libcups2 libxss1 libxrandr2 libasound2 libatk1.0-0 libatk-bridge2.0-0 libpangocairo-1.0-0 libgtk-3-0 \
  libgbm1 libc6 libcairo2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgdk-pixbuf2.0-0 libglib2.0-0 libnspr4 libpango-1.0-0 libstdc++6 libx11-6 \
- libxcb1 libxext6 libxfixes3 libxrender1 libxtst6 xdg-utils libgbm-dev > ./log || ( cat ./log && exit 1 )
+ libxcb1 libxext6 libxfixes3 libxrender1 libxtst6 xdg-utils libgbm-dev x11-apps > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Installing firefox..."
 # Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-apt-get install -y firefox firefox-geckodriver
+apt-get update -y > ./log || ( cat ./log && exit 1 )
+apt-get install -y firefox firefox-geckodriver libpci3 libegl-dev
 # xvfb-run firefox http://google.com
 # xvfb-run chromedriver --version
-
+# xvfb-run -e /dev/stdout firefox http://google.com
 
 # add-apt-repository -y ppa:system76/pop
 # apt install -f -y chromium > ./log || ( echoWarn "WARNING: chromium might NOT be available on $(getArch)" && cat ./log )
@@ -281,7 +284,8 @@ EOL
 
     systemctl daemon-reload
     systemctl enable chromedriver
-    # systemctl start chromedriver
+    # systemctl stop chromedriver
+    # systemctl restart chromedriver
     # systemctl -l --no-pager status chromedriver
 
     # NOTE: dbus-daemon must be working
@@ -291,6 +295,7 @@ EOL
     # export NO_AT_BRIDGE=1
     # rm -fv /var/run/dbus/pid
     # service dbus start
+    # service dbus stop
 fi
 
 # CHROME_VERSION=$(google-chrome --version 2> /dev/null || echo "")
