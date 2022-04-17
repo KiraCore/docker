@@ -16,6 +16,7 @@ TOOLS_VERSION="v0.1.0.7"
 IPFS_VERSION="v0.12.1"
 
 echo "Starting core dependency build..."
+add-apt-repository -y ppa:mozillateam/firefox-next
 apt-get update -y > ./log || ( cat ./log && exit 1 )
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
     software-properties-common curl wget git nginx apt-transport-https jq > ./log || ( cat ./log && exit 1 )
@@ -84,36 +85,6 @@ apt install -f -y bc dnsutils psmisc netcat nodejs npm > ./log || ( cat ./log &&
 echoInfo "INFO: Installing deb package manager..."
 echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sources.list.d/goreleaser.list && apt-get update -y && \
 	apt install nfpm
-
-echoInfo "INFO: Installing python essentials..."
-
-################################################
-# pyinstaller setup (requires python 3.11+)
-add-apt-repository -y ppa:deadsnakes/ppa
-apt update -y
-apt install -y python3.10
-update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 3
-
-apt remove -y --purge python3-apt
-apt autoclean -y
-apt install -y python3-apt python3.10-distutils python3.10-dev
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python3.10 get-pip.py
-apt install -y python3.10-venv
-
-python3 -m pip install --upgrade pip setuptools wheel
-pip3 -y uninstall pyinstaller || echoErr "ERROR: Failed to remove default pyinstaller"
-
-git clone https://github.com/pyinstaller/pyinstaller.git -b v4.10
-cd ./pyinstaller/bootloader && python3 ./waf all
-cd .. && python3 setup.py install
-cd ..
-
-pyinstaller --version
-################################################
-
-pip3 install crossenv
-pip3 install ECPy
 
 echoInfo "INFO: Installing services runner..."
 SYSCTRL_DESTINATION=/usr/local/bin/systemctl2
@@ -245,43 +216,55 @@ apt install -y gconf-service gdebi-core libgconf-2-4 libappindicator1 fonts-libe
  libgbm1 libc6 libcairo2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgdk-pixbuf2.0-0 libglib2.0-0 libnspr4 libpango-1.0-0 libstdc++6 libx11-6 \
  libxcb1 libxext6 libxfixes3 libxrender1 libxtst6 xdg-utils libgbm-dev > ./log || ( cat ./log && exit 1 )
 
+echoInfo "INFO: Installing firefox..."
+# Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+apt-get install -y firefox firefox-geckodriver
+# xvfb-run firefox http://google.com
+# xvfb-run chromedriver --version
+
+
 # add-apt-repository -y ppa:system76/pop
 # apt install -f -y chromium > ./log || ( echoWarn "WARNING: chromium might NOT be available on $(getArch)" && cat ./log )
 # add-apt-repository -y ppa:saiarcot895/chromium-dev > ./log || ( cat ./log && exit 1 )
 # apt update -y > ./log || ( cat ./log && exit 1 )
 # apt install -f -y chromium-browser || ( echoWarn "WARNING: chromium-browser might NOT be available on $(getArch)" && cat ./log )
 
-# if [ "$(getArch)" == "amd64" ] ; then
-#     GOOLGE_CHROME_FILE="google-chrome-stable_current_amd64.deb"
-#     wget https://dl.google.com/linux/direct/$GOOLGE_CHROME_FILE
-#     gdebi -n ./$GOOLGE_CHROME_FILE
-# 
-#     CHROME_DRIVER_FILE="chromedriver_linux64.zip"
-#     wget https://chromedriver.storage.googleapis.com/100.0.4896.20/$CHROME_DRIVER_FILE
-#     unzip $CHROME_DRIVER_FILE
-#     mv -fv chromedriver /usr/bin/chromedriver
-#     chmod +x /usr/bin/chromedriver
-#     chromedriver --version
-#     CHROMEDRIVER_EXECUTABLE=$(which chromedriver || echo "")
-# 
-#     cat > /etc/systemd/system/chromedriver.service << EOL
-# [Unit]
-# Description=Local Chrome Integration Test Service
-# After=network.target
-# [Service]
-# MemorySwapMax=0
-# Type=simple
-# User=root
-# WorkingDirectory=/root
-# ExecStart=$CHROMEDRIVER_EXECUTABLE --port=4444
-# Restart=always
-# RestartSec=5
-# LimitNOFILE=4096
-# [Install]
-# WantedBy=default.target
-# EOL
-# 
-# fi
+if [ "$(getArch)" == "amd64" ] ; then
+    GOOLGE_CHROME_FILE="google-chrome-stable_current_amd64.deb"
+    wget https://dl.google.com/linux/direct/$GOOLGE_CHROME_FILE
+    gdebi -n ./$GOOLGE_CHROME_FILE
+
+    CHROME_DRIVER_FILE="chromedriver_linux64.zip"
+    wget https://chromedriver.storage.googleapis.com/100.0.4896.20/$CHROME_DRIVER_FILE
+    unzip $CHROME_DRIVER_FILE
+    mv -fv chromedriver /usr/bin/chromedriver
+    chmod +x /usr/bin/chromedriver
+    chromedriver --version
+    CHROMEDRIVER_EXECUTABLE=$(which chromedriver)
+    XVFB_FILE=$(which xvfb-run)
+
+    cat > /etc/systemd/system/chromedriver.service << EOL
+[Unit]
+Description=Local Chrome Integration Test Service
+After=network.target
+[Service]
+MemorySwapMax=0
+Type=simple
+User=root
+WorkingDirectory=/root
+ExecStart=$XVFB_FILE $CHROMEDRIVER_EXECUTABLE --port=4444
+Restart=always
+RestartSec=5
+LimitNOFILE=4096
+[Install]
+WantedBy=default.target
+EOL
+
+    systemctl2 daemon-reload
+    systemctl2 enable chromedriver
+    # systemctl2 restart chromedriver
+    # systemctl2 -l --no-pager status chromedriver
+fi
 
 # CHROME_VERSION=$(google-chrome --version 2> /dev/null || echo "")
 # if (! $(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
@@ -309,6 +292,37 @@ apt install -y gconf-service gdebi-core libgconf-2-4 libappindicator1 fonts-libe
 # # Virtualization Manager
 # apt install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-manager qemu virt-manager virt-viewer virtinst libvirt-daemon
 ######################################
+
+echoInfo "INFO: Installing python essentials..."
+
+################################################
+# pyinstaller setup (requires python 3.11+)
+add-apt-repository -y ppa:deadsnakes/ppa
+apt update -y
+apt install -y python3.6 python3.10
+update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 2
+update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 3
+
+apt remove -y --purge python3-apt
+apt autoclean -y
+apt install -y python3-apt python3.10-distutils python3.10-dev
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3.10 get-pip.py
+apt install -y python3.10-venv
+
+python3 -m pip install --upgrade pip setuptools wheel
+pip3 -y uninstall pyinstaller || echoErr "ERROR: Failed to remove default pyinstaller"
+
+git clone https://github.com/pyinstaller/pyinstaller.git -b v4.10
+cd ./pyinstaller/bootloader && python3 ./waf all
+cd .. && python3 setup.py install
+cd ..
+
+pyinstaller --version
+################################################
+
+pip3 install crossenv
+pip3 install ECPy
 
 echoInfo "INFO: Cleanup..."
 rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR

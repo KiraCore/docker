@@ -56,9 +56,8 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     file build-essential hashdeep make tar unzip zip p7zip-full curl iputils-ping nano jq python python3 python3-pip \
     bash lsof bc dnsutils psmisc netcat coreutils binutils
 
-BIN_DEST="/usr/local/bin/CDHelper" && \
 safeWget ./cdhelper.zip "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/CDHelper-linux-${CDHELPER_ARCH}.zip" \
-  "$CDHELPER_HASH" && unzip ./cdhelper.zip -d "CDHelper" && cp -fv "$KIRA_BIN/CDHelper/CDHelper" $BIN_DEST && chmod -v 555 $BIN_DEST
+  "$CDHELPER_HASH" && unzip ./cdhelper.zip -d "CDHelper" && cp -rfv "$KIRA_BIN/CDHelper" "$(dirname $CDHELPER_DIR)" && chmod -Rv 555 $CDHELPER_DIR
 
 BIN_DEST="/usr/local/bin/sekaid" && \
   safeWget ./sekaid.deb "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-${ARCHITECURE}.deb" \

@@ -146,6 +146,29 @@ jobs:
             org.opencontainers.image.url=ghcr.io/kiracore/docker/base-image:${{ env.RELEASE_VER }}
             org.opencontainers.image.source=https://github.com/KiraCore/docker/base-image
             org.opencontainers.image.title=base-image
+       # # Build and push Docker image with Buildx (don't push on PR)
+       # # https://github.com/docker/build-push-action
+       # - name: Build and push Docker base-image image (local)
+       #   id: build-and-push-base-local
+       #   uses: docker/build-push-action@v2.10.0
+       #   with:
+       #     context: ./base-image
+       #     file: ./base-image/Dockerfile
+       #     load: true
+       #     tags: localhost:5000/base-image:${{ env.RELEASE_VER }}
+       #     # labels: ${{ steps.meta-base.outputs.labels }}
+       #     # platforms: linux/amd64,linux/arm64
+      - name: Build and push Docker base-image image
+        id: build-and-push-base
+        # ref. https://github.com/docker/build-push-action, v2.10.0
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./base-image
+          file: ./base-image/Dockerfile
+          push: true
+          tags: ${{ steps.meta-base.outputs.tags }}
+          labels: ${{ steps.meta-base.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
       - name: Extract Docker metadata for cors-anywhere
         id: meta-cors
         uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
@@ -158,6 +181,17 @@ jobs:
             org.opencontainers.image.url=ghcr.io/kiracore/docker/cors-anywhere:${{ env.RELEASE_VER }}
             org.opencontainers.image.source=https://github.com/KiraCore/docker/cors-anywhere
             org.opencontainers.image.title=cors-anywhere
+      - name: Build and push Docker cors-anywhere image
+        id: build-and-push-cors
+        # ref. https://github.com/docker/build-push-action, v2.10.0
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: ./cors-anywhere
+          file: ./cors-anywhere/Dockerfile
+          push: ${{ env.PUBLISH_IMAGES }}
+          tags: ${{ steps.meta-cors.outputs.tags }}
+          labels: ${{ steps.meta-cors.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
       - name: Extract Docker metadata for kira-image
         id: meta-kira
         uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
@@ -170,40 +204,6 @@ jobs:
             org.opencontainers.image.url=ghcr.io/kiracore/docker/kira-base:${{ env.RELEASE_VER }}
             org.opencontainers.image.source=https://github.com/KiraCore/docker/kira-base
             org.opencontainers.image.title=kira-base
-      # # Build and push Docker image with Buildx (don't push on PR)
-      # # https://github.com/docker/build-push-action
-      # - name: Build and push Docker base-image image (local)
-      #   id: build-and-push-base-local
-      #   uses: docker/build-push-action@v2.10.0
-      #   with:
-      #     context: ./base-image
-      #     file: ./base-image/Dockerfile
-      #     load: true
-      #     tags: localhost:5000/base-image:${{ env.RELEASE_VER }}
-      #     # labels: ${{ steps.meta-base.outputs.labels }}
-      #     # platforms: linux/amd64,linux/arm64
-      - name: Build and push Docker base-image image
-        id: build-and-push-base
-        # ref. https://github.com/docker/build-push-action, v2.10.0
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-        with:
-          context: ./base-image
-          file: ./base-image/Dockerfile
-          push: true
-          tags: ${{ steps.meta-base.outputs.tags }}
-          labels: ${{ steps.meta-base.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
-      - name: Build and push Docker cors-anywhere image
-        id: build-and-push-cors
-        # ref. https://github.com/docker/build-push-action, v2.10.0
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
-        with:
-          context: ./cors-anywhere
-          file: ./cors-anywhere/Dockerfile
-          push: ${{ env.PUBLISH_IMAGES }}
-          tags: ${{ steps.meta-cors.outputs.tags }}
-          labels: ${{ steps.meta-cors.outputs.labels }}
-          platforms: linux/amd64,linux/arm64
       - name: Build and push Docker kira-base image
         id: build-and-push-kira
         # ref. https://github.com/docker/build-push-action, v2.10.0
@@ -242,8 +242,8 @@ jobs:
         if: always()
         shell: bash
         run: |
-          shred -vzn 3 ../cosign.key &&  rm -fv ../cosign.key
-          rm -rfv ./*
+          chmod -Rv 666 ../cosign.key && shred -vzn 3 ../cosign.key &&  rm -fv ../cosign.key
+          chmod -Rv 666 ./* && rm -rfv ./*
           echo "(current dir): $PWD" && ls -l ./
       - name: Publish to pinata
         shell: bash
