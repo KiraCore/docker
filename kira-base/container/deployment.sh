@@ -77,7 +77,7 @@ safeWget ./interx.deb "https://github.com/KiraCore/interx/releases/download/$INT
 
 BIN_DEST="/usr/local/bin/tmconnect" && \
   safeWget ./tmconnect.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmconnect-linux-${ARCHITECURE}.deb" \
-  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./tmconnect.deb ./tmconnect && "$KIRA_BIN/tmconnect/bin/tmconnect" $BIN_DEST && chmod -v 555 $BIN_DEST
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./tmconnect.deb ./tmconnect && cp -fv "$KIRA_BIN/tmconnect/bin/tmconnect" $BIN_DEST && chmod -v 555 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/validator-key-gen" && \
   safeWget ./validator-key-gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/validator-key-gen-linux-${ARCHITECURE}.deb" \

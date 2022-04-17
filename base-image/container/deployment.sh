@@ -240,8 +240,10 @@ echoInfo "INFO: Updating dpeendecies (4)..."
 
 # ref.: http://ftp.debian.org/debian/pool/main/c/chromium/
 apt update -y > ./log || ( cat ./log && exit 1 )
-apt install -y gdebi-core libnss3 libgconf-2-4 libappindicator1 fonts-liberation xvfb libxi6 libx11-xcb1 libxcomposite1 libxcursor1 libxdamage1 libxi-dev \
-  libxtst-dev libnss3 libcups2 libxss1 libxrandr2 libasound2 libatk1.0-0 libatk-bridge2.0-0 libpangocairo-1.0-0 libgtk-3-0 libgbm1 > ./log || ( cat ./log && exit 1 )
+apt install -y gconf-service gdebi-core libgconf-2-4 libappindicator1 fonts-liberation xvfb libxi6 libx11-xcb1 libxcomposite1 libxcursor1 lsb-release \
+ libxdamage1 libxi-dev libxtst-dev libnss3 libcups2 libxss1 libxrandr2 libasound2 libatk1.0-0 libatk-bridge2.0-0 libpangocairo-1.0-0 libgtk-3-0 \
+ libgbm1 libc6 libcairo2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgdk-pixbuf2.0-0 libglib2.0-0 libnspr4 libpango-1.0-0 libstdc++6 libx11-6 \
+ libxcb1 libxext6 libxfixes3 libxrender1 libxtst6 xdg-utils libgbm-dev > ./log || ( cat ./log && exit 1 )
 
 # add-apt-repository -y ppa:system76/pop
 # apt install -f -y chromium > ./log || ( echoWarn "WARNING: chromium might NOT be available on $(getArch)" && cat ./log )
@@ -303,14 +305,9 @@ apt install -y gdebi-core libnss3 libgconf-2-4 libappindicator1 fonts-liberation
 #     $CHROME_EXECUTABLE --version
 # fi
 
-
 ########################################
-# Virtualization Manager
-
+# # Virtualization Manager
 # apt install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-manager qemu virt-manager virt-viewer virtinst libvirt-daemon
-
-
-
 ######################################
 
 echoInfo "INFO: Cleanup..."
