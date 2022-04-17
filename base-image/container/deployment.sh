@@ -26,12 +26,16 @@ useradd -s /bin/bash -d /home/kira -m -G sudo $USERNAME
 usermod -aG sudo $USERNAME
 
 echo "Removing file I/O limits..."
-echo "* hard nofile 500000" >> /etc/security/limits.conf
-echo "* soft nofile 500000" >> /etc/security/limits.conf
-echo "root hard nofile 500000" >> /etc/security/limits.conf
-echo "root soft nofile 500000" >> /etc/security/limits.conf
+echo "* hard nofile 524288" >> /etc/security/limits.conf
+echo "* soft nofile 524288" >> /etc/security/limits.conf
+echo "* hard nproc 524288" >> /etc/security/limits.conf
+echo "* soft nproc 524288" >> /etc/security/limits.conf
+echo "root hard nofile 524288" >> /etc/security/limits.conf
+echo "root soft nofile 524288" >> /etc/security/limits.conf
 echo "session required pam_limits.so" >> /etc/security/limits.conf
-echo "fs.file-max = 500000" >> /etc/sysctl.conf
+echo "fs.file-max = 524288" >> /etc/sysctl.conf
+echo "DefaultLimitNOFILE=524288" >> /etc/systemd/system.conf
+echo "DefaultLimitNOFILE=524288" >> /etc/systemd/user.conf 
 ulimit -n
 
 echo "INFO: Installing cosign"

@@ -70,7 +70,7 @@ BIN_DEST="/usr/local/bin/sekaid" && \
   safeWget ./sekaid.deb "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-${ARCHITECURE}.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./sekaid.deb ./sekaid && cp -fv "$KIRA_BIN/sekaid/bin/sekaid" $BIN_DEST && chmod -v 755 $BIN_DEST
 
-BIN_DEST="/usr/local/bin/kira-utils.sh" && \
+BIN_DEST="/usr/local/bin/sekai-utils.sh" && \
   safeWget ./sekai-utils.sh "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-utils.sh" \
   "$KIRA_COSIGN_PUB" && chmod -v 755 ./sekai-utils.sh && ./sekai-utils.sh sekaiUtilsSetup && . /etc/profile && chmod -v 755 $BIN_DEST
 
