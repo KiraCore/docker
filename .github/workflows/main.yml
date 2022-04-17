@@ -134,18 +134,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       # Extract metadata (tags, labels) for Docker
       # ref.: https://github.com/docker/metadata-action, v3.7.0
-      - name: Extract Docker metadata for cors-anywhere
-        id: meta-cors
-        uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}
-          tags: |
-            type=raw,value=${{ env.RELEASE_VER }}
-          labels: |
-            org.opencontainers.image.licenses=AGPLv3
-            org.opencontainers.image.url=ghcr.io/kiracore/docker/cors-anywhere:${{ env.RELEASE_VER }}
-            org.opencontainers.image.source=https://github.com/KiraCore/docker/cors-anywhere
-            org.opencontainers.image.title=cors-anywhere
       - name: Extract Docker metadata for base-image
         id: meta-base
         uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
@@ -158,6 +146,18 @@ jobs:
             org.opencontainers.image.url=ghcr.io/kiracore/docker/base-image:${{ env.RELEASE_VER }}
             org.opencontainers.image.source=https://github.com/KiraCore/docker/base-image
             org.opencontainers.image.title=base-image
+      - name: Extract Docker metadata for cors-anywhere
+        id: meta-cors
+        uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}
+          tags: |
+            type=raw,value=${{ env.RELEASE_VER }}
+          labels: |
+            org.opencontainers.image.licenses=AGPLv3
+            org.opencontainers.image.url=ghcr.io/kiracore/docker/cors-anywhere:${{ env.RELEASE_VER }}
+            org.opencontainers.image.source=https://github.com/KiraCore/docker/cors-anywhere
+            org.opencontainers.image.title=cors-anywhere
       - name: Extract Docker metadata for kira-image
         id: meta-kira
         uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
@@ -220,7 +220,7 @@ jobs:
         shell: bash
         env:
           KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-        run: 'echo "$KEY" > cosign.key'
+        run: 'echo "$KEY" > ../cosign.key'
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
       # repository is public to avoid leaking data.  If you would like to publish
@@ -230,19 +230,21 @@ jobs:
         # if booleans handling (can be either bool or string depending on context)
         if: env.PUBLISH_IMAGES == 'true' || env.PUBLISH_IMAGES == true
         env:
-          COSIGN_EXPERIMENTAL: "true"
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: |
-          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.RELEASE_VER }}
-          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.RELEASE_VER }}
-          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.RELEASE_VER }}
+          cosign sign --key ../cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.RELEASE_VER }}
+          cosign sign --key ../cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.RELEASE_VER }}
+          cosign sign --key ../cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.RELEASE_VER }}
       # If the secret is safely wiped, then the time its exposed to the build runner is very short
-      - name: Remove signing key from disk
+      - name: Cleanup all resources
         if: always()
-        run: 'shred -vzn 3 cosign.key && rm -fv cosign.key'
         shell: bash
+        run: |
+          shred -vzn 3 ../cosign.key &&  rm -fv ../cosign.key
+          rm -rfv ./*
+          echo "(current dir): $PWD" && ls -l ./
       - name: Publish to pinata
         shell: bash
         run: |
