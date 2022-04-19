@@ -103,10 +103,11 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
 
 # NOTE: python3-pip is not compatible, use boottrap instead:
 curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
+python3.10 -m pip install --upgrade pip setuptools wheel
 
 git clone https://github.com/pyinstaller/pyinstaller.git -b v4.10
-cd ./pyinstaller/bootloader && python3 ./waf all
-cd .. && python3 setup.py install
+cd ./pyinstaller/bootloader && python3.10 ./waf all
+cd .. && python3.10 setup.py install
 cd ..
 
 pyinstaller --version
