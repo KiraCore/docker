@@ -220,7 +220,7 @@ jobs:
         shell: bash
         env:
           KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-        run: 'echo "$KEY" > ../cosign.key'
+        run: 'echo "$KEY" > cosign.key'
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
       # repository is public to avoid leaking data.  If you would like to publish
@@ -230,19 +230,20 @@ jobs:
         # if booleans handling (can be either bool or string depending on context)
         if: env.PUBLISH_IMAGES == 'true' || env.PUBLISH_IMAGES == true
         env:
+          COSIGN_EXPERIMENTAL: true
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: |
-          cosign sign --key ../cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.RELEASE_VER }}
-          cosign sign --key ../cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.RELEASE_VER }}
-          cosign sign --key ../cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.RELEASE_VER }}
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}:${{ env.RELEASE_VER }}
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.RELEASE_VER }}
+          cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.RELEASE_VER }}
       # If the secret is safely wiped, then the time its exposed to the build runner is very short
       - name: Cleanup all resources
         if: always()
         shell: bash
         run: |
-          chmod -Rv 666 ../cosign.key && shred -vzn 3 ../cosign.key &&  rm -fv ../cosign.key
+          chmod -Rv 666 cosign.key && shred -vzn 3 cosign.key &&  rm -fv cosign.key
           chmod -Rv 666 ./* && rm -rfv ./*
           echo "(current dir): $PWD" && ls -l ./
       - name: Publish to pinata
