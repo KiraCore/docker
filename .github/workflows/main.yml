@@ -218,12 +218,6 @@ jobs:
           tags: ${{ steps.meta-kira.outputs.tags }}
           labels: ${{ steps.meta-kira.outputs.labels }}
           platforms: linux/amd64,linux/arm64
-      # This is not the best way to store cosign keys, all must be wiped
-      - name: Write signing key to disk
-        shell: bash
-        env:
-          KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-        run: 'echo "$KEY" > cosign.key'
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
       # repository is public to avoid leaking data.  If you would like to publish
@@ -235,6 +229,7 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: true
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           TAGS_BASE: ${{ steps.meta-base.outputs.tags }}
           TAGS_CORS: ${{ steps.meta-cors.outputs.tags }}
           TAGS_KIRA: ${{ steps.meta-kira.outputs.tags }}
@@ -244,6 +239,7 @@ jobs:
         # cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.RELEASE_VER }}
         # cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.RELEASE_VER }}
         run: |
+          echo "$KEY" > cosign.key
           cosign sign --key cosign.key ${TAGS_BASE}
           cosign sign --key cosign.key ${TAGS_CORS}
           cosign sign --key cosign.key ${TAGS_KIRA}

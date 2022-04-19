@@ -2,4 +2,4 @@
 set -e
 set +x
 
-echo "v0.10.0.7"
+echo "v0.10.1-rc.8"

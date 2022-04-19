@@ -20,6 +20,9 @@ apt-get update -y > ./log || ( cat ./log && exit 1 )
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
     software-properties-common curl wget git nginx apt-transport-https jq sudo > ./log || ( cat ./log && exit 1 )
 
+add-apt-repository -y ppa:deadsnakes/ppa
+add-apt-repository -y ppa:mozillateam/firefox-next
+
 echo "Creating kira user..."
 USERNAME=kira
 useradd -s /bin/bash -d /home/kira -m -G sudo $USERNAME
@@ -89,15 +92,28 @@ else
 fi
 
 echoInfo "INFO: Updating dpeendecies (2)..."
-add-apt-repository -y ppa:mozillateam/firefox-next
 apt-get update -y > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Installing core dpeendecies..."
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
     file build-essential net-tools hashdeep make ca-certificates p7zip-full lsof libglu1-mesa bash gnupg \
-    nodejs node-gyp python python3 python3-pip tar unzip xz-utils yarn zip protobuf-compiler golang-goprotobuf-dev \
-    golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev clang cmake gcc g++ pkg-config libudev-dev \
-    libusb-1.0-0-dev curl iputils-ping nano openssl dos2unix dbus > ./log || ( cat ./log && exit 1 )
+    nodejs node-gyp python python3.10 python3.10-distutils python3.10-dev python3.10-venv tar unzip xz-utils \
+    yarn zip protobuf-compiler golang-goprotobuf-dev golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev \
+    clang cmake gcc g++ pkg-config libudev-dev libusb-1.0-0-dev curl iputils-ping nano openssl dos2unix dbus > ./log || ( cat ./log && exit 1 )
+
+# NOTE: python3-pip is not compatible, use boottrap instead:
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
+
+git clone https://github.com/pyinstaller/pyinstaller.git -b v4.10
+cd ./pyinstaller/bootloader && python3 ./waf all
+cd .. && python3 setup.py install
+cd ..
+
+pyinstaller --version
+
+#pip3 install pyinstaller
+pip3 install crossenv
+pip3 install ECPy
 
 echoInfo "INFO: Updating dpeendecies (3)..."
 apt update -y > ./log || ( cat ./log && exit 1 )
@@ -214,6 +230,9 @@ fvm config
 
 fvm install 2.5.3
 
+# git exception for the flutter directotry is require
+git config --global --add safe.directory /usr/lib/flutter
+
 echoInfo "INFO: Intstalling IPFS..."
 IPFS_TAR="go-ipfs_${IPFS_VERSION}_linux-${IPFS_ARCH}.tar.gz"
 cd /tmp && safeWget $IPFS_TAR "https://dist.ipfs.io/go-ipfs/${IPFS_VERSION}/$IPFS_TAR" "$IPFS_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
@@ -326,37 +345,40 @@ fi
 # apt install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-manager qemu virt-manager virt-viewer virtinst libvirt-daemon
 ######################################
 
-echoInfo "INFO: Installing python essentials..."
+# echoInfo "INFO: Installing python essentials..."
 
-################################################
-# pyinstaller setup (requires python 3.11+)
-add-apt-repository -y ppa:deadsnakes/ppa
-apt update -y
-apt install -y python3.6 python3.10
-update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 2
-update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 3
+#################################################
+## pyinstaller setup (requires python 3.11+)
+#add-apt-repository -y ppa:deadsnakes/ppa
+#apt update -y
+#apt install -y python3.6 python3.7 python3.10
+#update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 2
+#update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 3
+#update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 4
 
-apt remove -y --purge python3-apt
-apt autoclean -y
-# NOTE: Python 3.6 does not have distutils
-apt install -y python3-apt python3.6-dev python3.10-distutils python3.10-dev
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python3.10 get-pip.py
-apt install -y python3.6-venv python3.10-venv
-
-python3 -m pip install --upgrade pip setuptools wheel
-pip3 -y uninstall pyinstaller || echoErr "ERROR: Failed to remove default pyinstaller"
-
-git clone https://github.com/pyinstaller/pyinstaller.git -b v4.10
-cd ./pyinstaller/bootloader && python3 ./waf all
-cd .. && python3 setup.py install
-cd ..
-
-pyinstaller --version
-################################################
-
-pip3 install crossenv
-pip3 install ECPy
+#
+#apt remove -y --purge python3-apt
+#apt autoclean -y
+## NOTE: Python 3.6 does not have distutils
+#apt install -y python3-apt python3.6-dev python3.7-distutils python3.7-dev python3.10-distutils python3.10-dev
+#curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+#python3.10 get-pip.py
+#apt install -y python3.6-venv python3.7-venv python3.10-venv
+#
+#python3 -m pip install --upgrade pip setuptools wheel
+#pip3 -y uninstall pyinstaller || echoErr "ERROR: Failed to remove default pyinstaller"
+#
+# git clone https://github.com/pyinstaller/pyinstaller.git -b v4.10
+# cd ./pyinstaller/bootloader && python3 ./waf all
+# cd .. && python3 setup.py install
+# cd ..
+# 
+# pyinstaller --version
+# #################################################
+# 
+# #pip3 install pyinstaller
+# pip3 install crossenv
+# pip3 install ECPy
 
 echoInfo "INFO: Cleanup..."
 rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR
