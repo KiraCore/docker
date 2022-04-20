@@ -239,7 +239,7 @@ jobs:
         # cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}:${{ env.RELEASE_VER }}
         # cosign sign --key cosign.key ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.RELEASE_VER }}
         run: |
-          echo "$KEY" > cosign.key
+          echo "$COSIGN_KEY" > cosign.key
           cosign sign --key cosign.key ${TAGS_BASE}
           cosign sign --key cosign.key ${TAGS_CORS}
           cosign sign --key cosign.key ${TAGS_KIRA}
