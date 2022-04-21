@@ -25,7 +25,7 @@ add-apt-repository -y ppa:mozillateam/firefox-next
 
 echo "Creating kira user..."
 USERNAME=kira
-useradd -s /bin/bash -d /home/kira -m -G sudo $USERNAME
+useradd -s /bin/bash -d $KIRA_HOME -m -G sudo $USERNAME
 usermod -aG sudo $USERNAME
 
 echo "Removing file I/O limits..."
@@ -263,19 +263,51 @@ apt-get update -y > ./log || ( cat ./log && exit 1 )
 apt-get install -y firefox firefox-geckodriver libpci3 libegl-dev
 # xvfb-run firefox http://google.com
 # xvfb-run chromedriver --version
-# xvfb-run -e /dev/stdout firefox http://google.com
-
-# add-apt-repository -y ppa:system76/pop
-# apt install -f -y chromium > ./log || ( echoWarn "WARNING: chromium might NOT be available on $(getArch)" && cat ./log )
-# add-apt-repository -y ppa:saiarcot895/chromium-dev > ./log || ( cat ./log && exit 1 )
-# apt update -y > ./log || ( cat ./log && exit 1 )
-# apt install -f -y chromium-browser || ( echoWarn "WARNING: chromium-browser might NOT be available on $(getArch)" && cat ./log )
+# xvfb-run -e /dev/stdout firefox https://google.com
 
 if [ "$(getArch)" == "amd64" ] ; then
+    # Installing google-chrome Dart Debug extension, ref.: https://chrome.google.com/webstore/detail/dart-debug-extension/?hl=en
+    # See chrome CRX Extraction/Downloader extension to generte zip file
+    wget https://ipfs.kira.network/ipfs/QmQBjogqwQwAkURAQotvLFCcLwys19JAAu9yFqhSF7hBtY -O ./dart-debug.zip
+    EXTENSIONS_DIR=/opt/google/chrome/extensions
+    EXTENSIONS_PATH="${EXTENSIONS_DIR}/eljbmlghnomdjgdjmbdekegdkbabckhm/1.28_0"
+    mkdir -p $EXTENSIONS_PATH && unzip ./dart-debug.zip -d $EXTENSIONS_PATH && chmod -v 777 $EXTENSIONS_DIR
+
+    EXTENSIONS_DIR=/root/.config/google-chrome/Default/Extensions
+    EXTENSIONS_PATH="${EXTENSIONS_DIR}/eljbmlghnomdjgdjmbdekegdkbabckhm/1.28_0"
+    mkdir -p $EXTENSIONS_PATH && unzip ./dart-debug.zip -d $EXTENSIONS_PATH && chmod -v 777 $EXTENSIONS_DIR
+
+    EXTENSIONS_DIR=$KIRA_HOME/.config/google-chrome/Default/Extensions
+    EXTENSIONS_PATH="${EXTENSIONS_DIR}/eljbmlghnomdjgdjmbdekegdkbabckhm/1.28_0"
+    mkdir -p $EXTENSIONS_PATH && unzip ./dart-debug.zip -d $EXTENSIONS_PATH && chmod -v 777 $EXTENSIONS_DIR
+
+    install_chrome_extension () {
+      default_dir=$(dirname $1)
+      mkdir -p $1 $default_dir/policies/managed $default_dir/policies/recommended
+      pref_file_path="$1/$2.json"
+      policy_file_path="$default_dir/policies/managed/test_policy.json"
+      upd_url="https://clients2.google.com/service/update2/crx"
+      echo "{" > "$pref_file_path"
+      echo "  \"external_update_url\": \"$upd_url\"" >> "$pref_file_path"
+      echo "}" >> "$pref_file_path"
+      echo "{" > "$policy_file_path"
+      echo "  \"ExtensionInstallForcelist\": [\"$2,$upd_url\""] >> "$policy_file_path"
+      echo "}" >> "$policy_file_path"
+      chmod -Rv 777 $default_dir
+      echoInfo "Added \"$pref_file_path\" -> $3"
+    }
+
+    install_chrome_extension /opt/google/chrome/extensions "eljbmlghnomdjgdjmbdekegdkbabckhm" "Dart Debug Extension"
+    install_chrome_extension /root/.config/google-chrome/Default/Extensions "eljbmlghnomdjgdjmbdekegdkbabckhm" "Dart Debug Extension"
+    install_chrome_extension $KIRA_HOME/.config/google-chrome/Default/Extensions "eljbmlghnomdjgdjmbdekegdkbabckhm" "Dart Debug Extension"
+
     GOOLGE_CHROME_FILE="google-chrome-stable_current_amd64.deb"
     wget https://dl.google.com/linux/direct/$GOOLGE_CHROME_FILE
     gdebi -n ./$GOOLGE_CHROME_FILE
     google-chrome --version
+    # create chrome working directory
+    CHROME_WORK_DIR=$KIRA_HOME/.local
+    mkdir -p $CHROME_WORK_DIR && chmod -R 777 $CHROME_WORK_DIR
 
     CHROME_DRIVER_FILE="chromedriver_linux64.zip"
     wget https://chromedriver.storage.googleapis.com/100.0.4896.20/$CHROME_DRIVER_FILE
@@ -295,7 +327,7 @@ MemorySwapMax=0
 Type=simple
 User=$USERNAME
 WorkingDirectory=$KIRA_HOME
-ExecStart=$XVFB_FILE $CHROMEDRIVER_EXECUTABLE --port=4444
+ExecStart=$XVFB_FILE $CHROMEDRIVER_EXECUTABLE --port=4444 --verbose 
 Restart=always
 RestartSec=5
 LimitNOFILE=4096
@@ -309,77 +341,10 @@ EOL
     # systemctl restart chromedriver
     # systemctl -l --no-pager status chromedriver
 
-    # NOTE: dbus-daemon must be working
-    #/usr/bin/dbus-daemon --system
-
-    # Alternatively:
-    # export NO_AT_BRIDGE=1
-    # rm -fv /var/run/dbus/pid
+    # Additionally run dbus
     # service dbus start
-    # service dbus stop
+    # service dbus stop    
 fi
 
-# CHROME_VERSION=$(google-chrome --version 2> /dev/null || echo "")
-# if (! $(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
-#     CHROME_VERSION=$(google-chrome --version || echo "")
-#     CHROME_EXECUTABLE=$(which google-chrome || echo "")
-# else
-#     CHROME_VERSION=$(chromium --version 2> /dev/null || echo "")
-#     if (! $(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
-#         CHROME_VERSION=$(chromium --version || echo "")
-#         CHROME_EXECUTABLE=$(which chromium || echo "")
-#     else
-#         CHROME_VERSION=$(chromium-browser --version 2> /dev/null || echo "")
-#         CHROME_EXECUTABLE=$(which chromium-browser || echo "")
-#     fi
-# fi
-# 
-# if [ -z "$CHROME_EXECUTABLE" ] || ($(isNullOrWhitespaces "$CHROME_VERSION"))  ; then
-#     echoErr "ERROR: Failed to find chrome executable"
-#     exit 1
-# else
-#     $CHROME_EXECUTABLE --version
-# fi
-
-########################################
-# # Virtualization Manager
-# apt install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-manager qemu virt-manager virt-viewer virtinst libvirt-daemon
-######################################
-
-# echoInfo "INFO: Installing python essentials..."
-
-#################################################
-## pyinstaller setup (requires python 3.11+)
-#add-apt-repository -y ppa:deadsnakes/ppa
-#apt update -y
-#apt install -y python3.6 python3.7 python3.10
-#update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.6 2
-#update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 3
-#update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 4
-
-#
-#apt remove -y --purge python3-apt
-#apt autoclean -y
-## NOTE: Python 3.6 does not have distutils
-#apt install -y python3-apt python3.6-dev python3.7-distutils python3.7-dev python3.10-distutils python3.10-dev
-#curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-#python3.10 get-pip.py
-#apt install -y python3.6-venv python3.7-venv python3.10-venv
-#
-#python3 -m pip install --upgrade pip setuptools wheel
-#pip3 -y uninstall pyinstaller || echoErr "ERROR: Failed to remove default pyinstaller"
-#
-# git clone https://github.com/pyinstaller/pyinstaller.git -b v4.10
-# cd ./pyinstaller/bootloader && python3 ./waf all
-# cd .. && python3 setup.py install
-# cd ..
-# 
-# pyinstaller --version
-# #################################################
-# 
-# #pip3 install pyinstaller
-# pip3 install crossenv
-# pip3 install ECPy
-
 echoInfo "INFO: Cleanup..."
-rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR
+rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR $SDKTOOLS_ZIP $GO_TAR $CDHELPER_ZIP ./dart-debug.zip
