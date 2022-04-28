@@ -6,7 +6,8 @@ FROM ubuntu:20.04
 ENV JOURNAL_LOGS="/var/log/journal"
 ENV COMMON_DIR="/common"
 ENV COMMON_READ="/common_ro"
-ENV GLOBAL_COMMON_RO="/common_ro/kiraglob"
+ENV GLOBAL_COMMON="${COMMON_DIR}/kiraglob"
+ENV GLOBAL_COMMON_RO="${COMMON_READ}/kiraglob"
 ENV SNAP_DIR="/snap"
 
 # Env necessary for the individual child container setup
@@ -20,16 +21,6 @@ ENV SELF_CONTAINER=${SELF_HOME}/container
 ENV START_SCRIPT=${SELF_CONTAINER}/start.sh
 ENV BUILD_SCRIPT=${SELF_CONTAINER}/deployment.sh
 ENV HEALTHCHECK_SCRIPT=${SELF_CONTAINER}/healthcheck.sh
-ENV ON_FAILURE_SCRIPT=${SELF_CONTAINER}/on_failure.sh
-ENV ON_INIT_SCRIPT=${SELF_CONTAINER}/on_init.sh
-ENV ON_SUCCESS_SCRIPT=${SELF_CONTAINER}/on_success.sh
-ENV INIT_START_FILE=${SELF_HOME}/init_start
-ENV INIT_END_FILE=${SELF_HOME}/init_end
-ENV FAILURE_START_FILE=${SELF_HOME}/failure_start
-ENV FAILURE_END_FILE=${SELF_HOME}/failure_end
-ENV SUCCESS_START_FILE=${SELF_HOME}/success_start
-ENV SUCCESS_END_FILE=${SELF_HOME}/success_end
-ENV MAINTENANCE_FILE=${SELF_HOME}/maintenence
 
 ENV SEKAID_HOME=/root/.sekaid
 ENV INTERX_HOME=/root/.interx
@@ -40,11 +31,10 @@ ENV KIRA_BIN="/usr/kira/bin"
 ENV KEYS_DIR="/usr/keys"
 ENV KIRA_HOME="/home/kira"
 ENV KIRA_COSIGN_PUB="/usr/keys/kira-cosign.pub"
-ENV CDHELPER_DIR="/usr/local/bin/CDHelper"
-ENV PATH="${PATH}:${KIRA_BIN}:${CDHELPER_DIR}"
+ENV PATH="${PATH}:${KIRA_BIN}"
 ENV COMMON_LOGS="${COMMON_DIR}/logs"
 
-RUN mkdir -p ${KIRA_HOME} ${KEYS_DIR} ${CDHELPER_DIR} ${SELF_CONTAINER} ${KIRA_BIN} ${COMMON_READ} ${SNAP_DIR} ${SELF_HOME} ${SELF_SCRIPTS} ${SELF_CONFIGS} ${SELF_UPDATE} ${SELF_UPDATE_TMP} ${SELF_LOGS} ${SEKAID_HOME} ${INTERX_HOME} ${COMMON_DIR}
+RUN mkdir -p ${KIRA_HOME} ${GLOBAL_COMMON} ${GLOBAL_COMMON_RO} ${KEYS_DIR} ${SELF_CONTAINER} ${KIRA_BIN} ${COMMON_READ} ${SNAP_DIR} ${SELF_HOME} ${SELF_SCRIPTS} ${SELF_CONFIGS} ${SELF_UPDATE} ${SELF_UPDATE_TMP} ${SELF_LOGS} ${SEKAID_HOME} ${INTERX_HOME} ${COMMON_DIR}
 
 ADD ./container ${SELF_CONTAINER}
 
@@ -52,3 +42,7 @@ RUN chmod -Rv 777 ${SELF_HOME}
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN LC_ALL=C ${BUILD_SCRIPT} && rm -rf /var/lib/apt/lists/*
+
+HEALTHCHECK --interval=60s --timeout=600s --start-period=600s --retries=4 CMD ${HEALTHCHECK_SCRIPT}
+
+CMD ["sh", "-c", "/bin/bash ${START_SCRIPT} | tee -a ${COMMON_LOGS}/start.log ; test ${PIPESTATUS[0]} = 0"]

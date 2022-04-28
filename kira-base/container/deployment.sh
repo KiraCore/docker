@@ -9,8 +9,8 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
 
 CDHELPER_VERSION="v0.6.51"
 SEKAI_VERSION="v0.1.26-rc.11"
-INTERX_VERSION="v0.4.5-rc.4"
-TOOLS_VERSION="v0.1.1-rc.10"
+INTERX_VERSION="v0.4.6"
+TOOLS_VERSION="v0.1.4"
 COSIGN_VERSION="v1.7.2"
 
 cd $KIRA_BIN
@@ -44,18 +44,8 @@ FILE_NAME="bash-utils.sh" && \
  chmod -v 755 ./$FILE_NAME && ./$FILE_NAME bashUtilsSetup "/var/kiraglob" && . /etc/profile && \
  echoInfo "INFO: Installed bash-utils $(bash-utils bashUtilsVersion)"
 
-PLATFORM="$(toLower $(uname))"
+PLATFORM="$(getPlatform)"
 ARCHITECURE=$(getArch)
-
-if [ "$ARCHITECURE" == "amd64"  ] ; then
-  CDHELPER_ARCH="x64"
-  CDHELPER_HASH="082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7"
-elif [ "$ARCHITECURE" == "arm64"  ] ; then
-  CDHELPER_ARCH="arm64"
-  CDHELPER_HASH="c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3"
-else
-  echoErr "ERROR: Unsupported architecture '$ARCHITECTURE', expected arm64 or amd64."
-fi
 
 echoInfo "INFO: APT Update, Update, Intall & Install dependencies..."
 apt-get update -y --fix-missing
@@ -63,8 +53,10 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     file build-essential hashdeep make tar unzip zip p7zip-full curl iputils-ping nano jq python python3 python3-pip \
     bash lsof bc dnsutils psmisc netcat coreutils binutils
 
-safeWget ./cdhelper.zip "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/CDHelper-linux-${CDHELPER_ARCH}.zip" \
-  "$CDHELPER_HASH" && unzip ./cdhelper.zip -d "CDHelper" && cp -rfv "$KIRA_BIN/CDHelper" "$(dirname $CDHELPER_DIR)" && chmod -Rv 755 $CDHELPER_DIR
+BIN_DEST="/usr/local/bin/CDHelper" && \
+  safeWget ./cdhelper.zip "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/CDHelper-linux-${ARCHITECURE}.zip" \
+  "082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7,c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3" && \
+  unzip -o ./cdhelper.zip -d "CDHelper" && cp -rfv "$KIRA_BIN/CDHelper" "$(dirname $BIN_DEST)" && chmod -Rv 755 $BIN_DEST && setGlobPath $BIN_DEST
 
 BIN_DEST="/usr/local/bin/sekaid" && \
   safeWget ./sekaid.deb "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-${ARCHITECURE}.deb" \
@@ -72,7 +64,7 @@ BIN_DEST="/usr/local/bin/sekaid" && \
 
 BIN_DEST="/usr/local/bin/sekai-utils.sh" && \
   safeWget ./sekai-utils.sh "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-utils.sh" \
-  "$KIRA_COSIGN_PUB" && chmod -v 755 ./sekai-utils.sh && ./sekai-utils.sh sekaiUtilsSetup && . /etc/profile && chmod -v 755 $BIN_DEST
+  "$KIRA_COSIGN_PUB" && chmod -v 755 ./sekai-utils.sh && ./sekai-utils.sh sekaiUtilsSetup && chmod -v 755 $BIN_DEST && . /etc/profile
 
 FILE=/usr/local/bin/sekai-env.sh && \
 safeWget $FILE "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-env.sh" \
