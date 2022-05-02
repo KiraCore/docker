@@ -10,7 +10,7 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
 CDHELPER_VERSION="v0.6.51"
 SEKAI_VERSION="v0.1.26-rc.11"
 INTERX_VERSION="v0.4.6"
-TOOLS_VERSION="v0.1.4"
+TOOLS_VERSION="v0.1.5"
 COSIGN_VERSION="v1.7.2"
 
 cd $KIRA_BIN

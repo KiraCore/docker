@@ -34,11 +34,11 @@ done
 globSet CFG_TASK true $GLOBAL_COMMON
 FAILED="false"
 if [ "${NODE_TYPE,,}" == "sentry" ] || [ "${NODE_TYPE,,}" == "seed" ]; then
-    $SELF_CONTAINER/sentry/start.sh || FAILED="true"
+    $COMMON_DIR/sentry/start.sh || FAILED="true"
 elif [ "${NODE_TYPE,,}" == "validator" ]; then
-    $SELF_CONTAINER/validator/start.sh || FAILED="true"
+    $COMMON_DIR/validator/start.sh || FAILED="true"
 elif [ "${NODE_TYPE,,}" == "interx" ]; then
-    $SELF_CONTAINER/interx/start.sh || FAILED="true"
+    $COMMON_DIR/interx/start.sh || FAILED="true"
 else
     echoErr "ERROR: Unknown node type '$NODE_TYPE'"
     FAILED="true"

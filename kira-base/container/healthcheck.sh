@@ -6,11 +6,11 @@ set -x
 echoInfo "INFO: Staring $NODE_TYPE healthcheck $KIRA_SETUP_VER ..." >> ${COMMON_LOGS}/health.log
 
 if [ "${NODE_TYPE,,}" == "sentry" ] || [ "${NODE_TYPE,,}" == "seed" ]; then
-    /bin/sh -c "/bin/bash ${SELF_CONTAINER}/sentry/healthcheck.sh | tee -a ${COMMON_LOGS}/health.log ; test ${PIPESTATUS[0]} = 0"
+    /bin/sh -c "/bin/bash ${COMMON_DIR}/sentry/healthcheck.sh | tee -a ${COMMON_LOGS}/health.log ; test ${PIPESTATUS[0]} = 0"
 elif [ "${NODE_TYPE,,}" == "validator" ]; then
-    /bin/sh -c "/bin/bash ${SELF_CONTAINER}/validator/healthcheck.sh | tee -a ${COMMON_LOGS}/health.log ; test ${PIPESTATUS[0]} = 0"
+    /bin/sh -c "/bin/bash ${COMMON_DIR}/validator/healthcheck.sh | tee -a ${COMMON_LOGS}/health.log ; test ${PIPESTATUS[0]} = 0"
 elif [ "${NODE_TYPE,,}" == "interx" ]; then
-    /bin/sh -c "/bin/bash ${SELF_CONTAINER}/interx/healthcheck.sh | tee -a ${COMMON_LOGS}/health.log ; test ${PIPESTATUS[0]} = 0"
+    /bin/sh -c "/bin/bash ${COMMON_DIR}/interx/healthcheck.sh | tee -a ${COMMON_LOGS}/health.log ; test ${PIPESTATUS[0]} = 0"
 else
     echoErr "ERROR: Unknown node type '$NODE_TYPE'" >> ${COMMON_LOGS}/health.log
 fi

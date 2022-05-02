@@ -12,7 +12,7 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.16.1"
-TOOLS_VERSION="v0.1.4"
+TOOLS_VERSION="v0.1.5"
 IPFS_VERSION="v0.12.1"
 
 echo "Starting core dependency build..."
@@ -48,7 +48,9 @@ echo "INFO: Installing cosign"
 if [[ "$(uname -m)" == *"ar"* ]] ; then ARCH="arm64"; else ARCH="amd64" ; fi && echo $ARCH && \
 PLATFORM=$(uname) && FILE_NAME=$(echo "cosign-${PLATFORM}-${ARCH}" | tr '[:upper:]' '[:lower:]') && \
  wget https://github.com/sigstore/cosign/releases/download/v1.7.2/$FILE_NAME && chmod +x -v ./$FILE_NAME && \
- mv -fv ./$FILE_NAME /usr/local/bin/cosign && cosign version
+ mv -fv ./$FILE_NAME /usr/local/bin/cosign
+
+cosign version
 
 cat > $KIRA_COSIGN_PUB << EOL
 -----BEGIN PUBLIC KEY-----
@@ -125,7 +127,7 @@ echo 'deb [trusted=yes] https://repo.goreleaser.com/apt/ /' | tee /etc/apt/sourc
 	apt install nfpm
 
 echoInfo "INFO: Installing services runner..."
-SYSCTRL_DESTINATION=/usr/bin/systemctl 
+SYSCTRL_DESTINATION=/usr/bin/systemctl
 safeWget $SYSCTRL_DESTINATION \
  https://raw.githubusercontent.com/gdraheim/docker-systemctl-replacement/9cbe1a00eb4bdac6ff05b96ca34ec9ed3d8fc06c/files/docker/systemctl.py \
  "e02e90c6de6cd68062dadcc6a20078c34b19582be0baf93ffa7d41f5ef0a1fdd" > ./log || ( cat ./log && exit 1 )
