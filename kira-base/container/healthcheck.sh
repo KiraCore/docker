@@ -3,6 +3,8 @@ set +e && source $ETC_PROFILE &>/dev/null && set -e
 # FILE="${SELF_CONTAINER}/healthcheck.sh" && rm $FILE && nano $FILE && chmod 555 $FILE
 set -x
 
+KIRA_SETUP_VER=$(globGet KIRA_SETUP_VER "$GLOBAL_COMMON_RO")
+
 echoInfo "INFO: Staring $NODE_TYPE healthcheck $KIRA_SETUP_VER ..." >> ${COMMON_LOGS}/health.log
 
 if [ "${NODE_TYPE,,}" == "sentry" ] || [ "${NODE_TYPE,,}" == "seed" ]; then
@@ -14,4 +16,3 @@ elif [ "${NODE_TYPE,,}" == "interx" ]; then
 else
     echoErr "ERROR: Unknown node type '$NODE_TYPE'" >> ${COMMON_LOGS}/health.log
 fi
-
