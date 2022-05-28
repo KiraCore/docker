@@ -31,7 +31,7 @@ ENV SEKAID_DATA="${SEKAID_HOME}/data"
 ENV KIRA_BIN="/usr/kira/bin"
 ENV KEYS_DIR="/usr/keys"
 ENV KIRA_HOME="/home/kira"
-ENV KIRA_COSIGN_PUB="/usr/keys/kira-cosign.pub"
+ENV KIRA_COSIGN_PUB="${KEYS_DIR}/kira-cosign.pub"
 ENV PATH="${PATH}:${KIRA_BIN}"
 ENV COMMON_LOGS="${COMMON_DIR}/logs"
 

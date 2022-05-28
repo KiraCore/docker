@@ -6,7 +6,7 @@ set -x
 # define versions of the software to install manually
 ARCHITECTURE=$(uname -m)
 OS_VERSION=$(uname) && OS_VERSION="${OS_VERSION,,}"
-GO_VERSION="1.17.8"
+GO_VERSION="1.18.2"
 CDHELPER_VERSION="v0.6.51"
 FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
@@ -68,22 +68,19 @@ FILE_NAME="bash-utils.sh" && \
  chmod -v 555 ./$FILE_NAME && ./$FILE_NAME bashUtilsSetup "/var/kiraglob" && . /etc/profile && \
  echoInfo "INFO: Installed bash-utils $(bash-utils bashUtilsVersion)"
 
+# go checksums: https://go.dev/dl/
 if [ "$(getArch)" == "arm64" ] ; then
-    GOLANG_ARCH="arm64"
     DART_ARCH="arm64"
     CDHELPER_ARCH="arm64"
     IPFS_ARCH="arm64"
-    GO_EXPECTED_HASH="57a9171682e297df1a5bd287be056ed0280195ad079af90af16dcad4f64710cb"
     DART_EXPECTED_HASH="de9d1c528367f83bbd192bd565af5b7d9d48f76f79baa4c0e4cf64723e3fb8be"
     FLUTTER_EXPECTED_HASH="7e2a28d14d7356a5bbfe516f8a7c9fc0353f85fe69e5cf6af22be2c7c8b45566"
     CDHELPER_EXPECTED_HASH="c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3"
     IPFS_EXPECTED_HASH="791fdc09d0e3d6f05d0581454b09e8c1d55cef4515170b695ff94075af183edf"
 elif [ "$(getArch)" == "amd64" ] ; then
-    GOLANG_ARCH="amd64"
     DART_ARCH="x64"
     CDHELPER_ARCH="x64"
     IPFS_ARCH="amd64"
-    GO_EXPECTED_HASH="980e65a863377e69fd9b67df9d8395fd8e93858e7a24c9f55803421e453f4f99"
     DART_EXPECTED_HASH="3cc63a0c21500bc5eb9671733843dcc20040b39fdc02f35defcf7af59f88d459"
     FLUTTER_EXPECTED_HASH="7e2a28d14d7356a5bbfe516f8a7c9fc0353f85fe69e5cf6af22be2c7c8b45566"
     CDHELPER_EXPECTED_HASH="082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7"
@@ -137,7 +134,7 @@ systemctl --version
 
 echoInfo "INFO: Installing binaries..."
 
-GO_TAR="go$GO_VERSION.${OS_VERSION}-$GOLANG_ARCH.tar.gz"
+GO_TAR="go$GO_VERSION.${OS_VERSION}-$(getArch).tar.gz"
 FLUTTER_TAR="flutter_${OS_VERSION}_$FLUTTER_VERSION.tar.xz"
 DART_ZIP="dartsdk-${OS_VERSION}-$DART_ARCH-release.zip"
 CDHELPER_ZIP="CDHelper-${OS_VERSION}-$CDHELPER_ARCH.zip"
@@ -156,10 +153,10 @@ rm /bin/CDHelper || echo "INFO: Failed to remove old symlink"
 ln -s $INSTALL_DIR/CDHelper /bin/CDHelper || echo "INFO: CDHelper symlink already exists" 
 CDHelper version
 
-echoInfo "INFO: Installing latest go $GOLANG_ARCH version $GO_VERSION https://golang.org/doc/install ..."
-cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR "$GO_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
-tar -C /usr/local -xf $GO_TAR &>/dev/null
-go version
+echoInfo "INFO: Installing latest go version $GO_VERSION https://golang.org/doc/install ..."
+cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR \
+ "fc4ad28d0501eaa9c9d6190de3888c9d44d8b5fb02183ce4ae93713f67b8a35b,e54bec97a1a5d230fc2f9ad0880fcbabb5888f30ed9666eca4a91c5a32e86cbc" && \
+ tar -C /usr/local -xf $GO_TAR &>/dev/null && go version
 
 echoInfo "INFO: Installing rust..."
 curl https://sh.rustup.rs -sSf | bash -s -- -y
