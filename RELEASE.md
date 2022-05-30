@@ -2,4 +2,4 @@
 ## KIRA DOCKER IMAGES
 
 ### Features:
-* kira-base image now verifies signatures of all dependencies
+* updated latest kira-base dependencies
