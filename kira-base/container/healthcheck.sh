@@ -18,10 +18,10 @@ find "/var/log" -type f -size +64M -exec truncate --size=8M {} + || ( echoWarn "
 echoInfo "INFO: Logs cleanup finalized"
 
 if [ "${EXIT_TASK,,}" == "true" ]; then
-    echoInfo "INFO: Ensuring interxd process is killed, process exit was requested" >> ${COMMON_LOGS}/health.log
+    echoInfo "INFO: Ensuring interx process is killed, process exit was requested" >> ${COMMON_LOGS}/health.log
     globSet HALT_TASK "true"
     pkill -15 sekaid || ( echoWarn "WARNING: Failed to kill sekaid process" >> ${COMMON_LOGS}/health.log )
-    pkill -15 interxd || ( echoWarn "WARNING: Failed to kill interxd process" >> ${COMMON_LOGS}/health.log )
+    pkill -9 interx || ( echoWarn "WARNING: Failed to kill interx process" >> ${COMMON_LOGS}/health.log )
     globSet EXIT_TASK "false"
 fi
 

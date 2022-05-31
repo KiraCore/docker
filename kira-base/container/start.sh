@@ -20,10 +20,10 @@ fi
 
 while [ "$HALT_TASK" == "true" ] || [ "$EXIT_TASK" == "true" ] ; do
     if [ "$EXIT_TASK" == "true" ] ; then
-        echoInfo "INFO: Ensuring that sekaid & interxd processes are killed"
+        echoInfo "INFO: Ensuring that sekaid & interx processes are killed"
         globSet HALT_TASK true
         pkill -15 sekaid || echoWarn "WARNING: Failed to kill sekaid process (-15)"
-        pkill -15 interxd || echoWarn "WARNING: Failed to kill interxd process (-15)"
+        pkill -9 interx || echoWarn "WARNING: Failed to kill interx process (-9)"
         globSet EXIT_TASK false
     fi
     echoInfo "INFO: Waiting for container to be unhalted..."
