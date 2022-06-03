@@ -73,7 +73,7 @@ FILE=/usr/local/bin/sekai-env.sh && \
 safeWget $FILE "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-env.sh" \
   "$KIRA_COSIGN_PUB" && chmod -v 755 $FILE && echo "source $FILE" >> /etc/profile && . /etc/profile
 
-BIN_DEST="/usr/local/bin/interx" && \
+BIN_DEST="/usr/local/bin/interxd" && \
 safeWget ./interx.deb "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-linux-${ARCHITECURE}.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./interx.deb ./interx && cp -fv "$KIRA_BIN/interx/bin/interx" $BIN_DEST && chmod -v 755 $BIN_DEST
 
@@ -100,7 +100,7 @@ echoInfo "INFO: Installed CDHelper: " && CDHelper version
 echoInfo "INFO: Installed bash-utils: " && bashUtilsVersion
 echoInfo "INFO: Installed sekai-utils: " && sekaiUtilsVersion
 echoInfo "INFO: Installed sekaid: " && sekaid version
-echoInfo "INFO: Installed interx: " && interx version
+echoInfo "INFO: Installed interxd: " && interxd version
 echoInfo "INFO: Installed tmconnect: " && tmconnect version
 echoInfo "INFO: Installed validator-key-gen: " && validator-key-gen --version
 echoInfo "INFO: Installed tmkms-key-import: " && tmkms-key-import version
