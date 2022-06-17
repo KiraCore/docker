@@ -227,17 +227,22 @@ fvm install 2.5.3
 git config --global --add safe.directory /usr/lib/flutter
 
 echoInfo "INFO: Intstalling IPFS tools..."
+cd /tmp
+
 IPFS_TAR="go-ipfs_${IPFS_VERSION}_linux-$(getArch).tar.gz"
-cd /tmp && safeWget $IPFS_TAR "https://dist.ipfs.io/go-ipfs/${IPFS_VERSION}/$IPFS_TAR" \
+
+safeWget "$IPFS_TAR" "https://dist.ipfs.io/go-ipfs/${IPFS_VERSION}/$IPFS_TAR" \
  "bd4ab982bf2a50a7e8fc4493bdb0960d7271b27ec1e6d74ef68df404d16b2228,791fdc09d0e3d6f05d0581454b09e8c1d55cef4515170b695ff94075af183edf" > ./log || ( cat ./log && exit 1 )
 
-tar -xzf $IPFS_TAR && ./go-ipfs/install.sh
+tar -xzf "$IPFS_TAR" && ./go-ipfs/install.sh
 ipfs --version
 ipfs init
 
-BIN_DEST="/usr/local/bin/ipfs-api" && cd /tmp && IPFS_DEB="/tmp/ipfs-api.deb" \
-  safeWget $IPFS_DEB "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/ipfs-api-linux-$(getArch).deb" \
-  "$KIRA_COSIGN_PUB" && dpkg-deb -x $IPFS_DEB ./ipfs-api && cp -fv "/tmp/ipfs-api/bin/ipfs-api" $BIN_DEST && chmod -v 755 $BIN_DEST
+BIN_DEST="/usr/local/bin/ipfs-api"
+IPFS_DEB="/tmp/ipfs-api.deb"
+
+safeWget "$IPFS_DEB" "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/ipfs-api-linux-$(getArch).deb" "$KIRA_COSIGN_PUB" && \
+  dpkg-deb -x "$IPFS_DEB" ./ipfs-api && cp -fv "/tmp/ipfs-api/bin/ipfs-api" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 ipfs-api version
 
