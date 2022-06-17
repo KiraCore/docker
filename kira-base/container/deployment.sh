@@ -8,9 +8,9 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     software-properties-common curl wget git nginx apt-transport-https
 
 CDHELPER_VERSION="v0.6.51"
-SEKAI_VERSION="v0.1.29-rc.14"
-INTERX_VERSION="v0.4.8"
-TOOLS_VERSION="v0.1.5"
+SEKAI_VERSION="v0.2.1-rc.15"
+INTERX_VERSION="v0.4.9"
+TOOLS_VERSION="v0.1.6"
 COSIGN_VERSION="v1.7.2"
 
 cd $KIRA_BIN
@@ -94,6 +94,10 @@ BIN_DEST="/usr/local/bin/bip39gen" && \
   safeWget ./bip39gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/bip39gen-linux-${ARCHITECURE}.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./bip39gen.deb ./bip39gen && cp -fv "$KIRA_BIN/bip39gen/bin/bip39gen" $BIN_DEST && chmod -v 755 $BIN_DEST
 
+BIN_DEST="/usr/local/bin/ipfs-api" && \
+  safeWget ./ipfs-api.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/ipfs-api-linux-${ARCHITECURE}.deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x ./ipfs-api.deb ./ipfs-api && cp -fv "$KIRA_BIN/ipfs-api/bin/ipfs-api" $BIN_DEST && chmod -v 755 $BIN_DEST
+
 loadGlobEnvs
 
 echoInfo "INFO: Installed CDHelper: " && CDHelper version
@@ -105,3 +109,4 @@ echoInfo "INFO: Installed tmconnect: " && tmconnect version
 echoInfo "INFO: Installed validator-key-gen: " && validator-key-gen --version
 echoInfo "INFO: Installed tmkms-key-import: " && tmkms-key-import version
 echoInfo "INFO: Installed bip39gen: " && bip39gen version
+echoInfo "INFO: Installed ipfs-api: " && ipfs-api version

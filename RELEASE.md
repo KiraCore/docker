@@ -2,4 +2,5 @@
 ## KIRA DOCKER IMAGES
 
 ### Features:
-* updated latest kira-base dependencies
+* added ipfs-api tool to base images
+* updated tools release

@@ -6,13 +6,13 @@ set -x
 # define versions of the software to install manually
 ARCHITECTURE=$(uname -m)
 OS_VERSION=$(uname) && OS_VERSION="${OS_VERSION,,}"
-GO_VERSION="1.18.2"
+GO_VERSION="1.18.3"
 CDHELPER_VERSION="v0.6.51"
 FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.16.1"
-TOOLS_VERSION="v0.1.5"
+TOOLS_VERSION="v0.1.6"
 IPFS_VERSION="v0.12.1"
 
 echo "Starting core dependency build..."
@@ -72,19 +72,9 @@ FILE_NAME="bash-utils.sh" && \
 if [ "$(getArch)" == "arm64" ] ; then
     DART_ARCH="arm64"
     CDHELPER_ARCH="arm64"
-    IPFS_ARCH="arm64"
-    DART_EXPECTED_HASH="de9d1c528367f83bbd192bd565af5b7d9d48f76f79baa4c0e4cf64723e3fb8be"
-    FLUTTER_EXPECTED_HASH="7e2a28d14d7356a5bbfe516f8a7c9fc0353f85fe69e5cf6af22be2c7c8b45566"
-    CDHELPER_EXPECTED_HASH="c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3"
-    IPFS_EXPECTED_HASH="791fdc09d0e3d6f05d0581454b09e8c1d55cef4515170b695ff94075af183edf"
 elif [ "$(getArch)" == "amd64" ] ; then
     DART_ARCH="x64"
     CDHELPER_ARCH="x64"
-    IPFS_ARCH="amd64"
-    DART_EXPECTED_HASH="3cc63a0c21500bc5eb9671733843dcc20040b39fdc02f35defcf7af59f88d459"
-    FLUTTER_EXPECTED_HASH="7e2a28d14d7356a5bbfe516f8a7c9fc0353f85fe69e5cf6af22be2c7c8b45566"
-    CDHELPER_EXPECTED_HASH="082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7"
-    IPFS_EXPECTED_HASH="bd4ab982bf2a50a7e8fc4493bdb0960d7271b27ec1e6d74ef68df404d16b2228"
 else
     echoErr "ERROR: Uknown architecture $(getArch)"
     exit 1
@@ -140,7 +130,8 @@ DART_ZIP="dartsdk-${OS_VERSION}-$DART_ARCH-release.zip"
 CDHELPER_ZIP="CDHelper-${OS_VERSION}-$CDHELPER_ARCH.zip"
 
 echoInfo "INFO: Installing CDHelper tool"
-cd /tmp && safeWget ./$CDHELPER_ZIP "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/$CDHELPER_ZIP" "$CDHELPER_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
+cd /tmp && safeWget ./$CDHELPER_ZIP "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/$CDHELPER_ZIP" \
+ "082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7,c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3" > ./log || ( cat ./log && exit 1 )
  
 INSTALL_DIR="/usr/local/bin/CDHelper"
 rm -rfv $INSTALL_DIR
@@ -163,7 +154,8 @@ curl https://sh.rustup.rs -sSf | bash -s -- -y
 cargo --version
 
 echoInfo "INFO: Setting up essential flutter dependencies..."
-cd /tmp && safeWget ./$FLUTTER_TAR https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/${OS_VERSION}/$FLUTTER_TAR "$FLUTTER_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
+cd /tmp && safeWget ./$FLUTTER_TAR https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/${OS_VERSION}/$FLUTTER_TAR \
+ "7e2a28d14d7356a5bbfe516f8a7c9fc0353f85fe69e5cf6af22be2c7c8b45566" > ./log || ( cat ./log && exit 1 )
 
 mkdir -p /usr/lib # make sure flutter root directory exists
 tar -C /usr/lib -xf ./$FLUTTER_TAR
@@ -176,7 +168,8 @@ touch $FLUTTER_CACHE/.dartignore
 touch $FLUTTER_CACHE/engine-dart-sdk.stamp
 
 echoInfo "INFO: Installing latest dart $DART_ARCH version $DART_VERSION https://dart.dev/get-dart/archive ..."
-cd /tmp && safeWget $DART_ZIP https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL_PATH/$DART_VERSION/sdk/$DART_ZIP "$DART_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
+cd /tmp && safeWget $DART_ZIP https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL_PATH/$DART_VERSION/sdk/$DART_ZIP \
+ "3cc63a0c21500bc5eb9671733843dcc20040b39fdc02f35defcf7af59f88d459,de9d1c528367f83bbd192bd565af5b7d9d48f76f79baa4c0e4cf64723e3fb8be" > ./log || ( cat ./log && exit 1 )
 unzip ./$DART_ZIP -d $FLUTTER_CACHE > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Updating dpeendecies (4)..."
@@ -195,7 +188,7 @@ loadGlobEnvs
 SDKTOOLS_ZIP=./commandlinetools.zip
 SDKTOOLS_DIR=$ANDROID_HOME/cmdline-tools/tools
 safeWget "$SDKTOOLS_ZIP" "https://dl.google.com/android/repository/commandlinetools-linux-8092744_latest.zip" \
- d71f75333d79c9c6ef5c39d3456c6c58c613de30e6a751ea0dbd433e8f8b9cbf ./log || ( cat ./log && exit 1 )
+ "d71f75333d79c9c6ef5c39d3456c6c58c613de30e6a751ea0dbd433e8f8b9cbf" ./log || ( cat ./log && exit 1 )
 
  rm -rf ./commandlinetools && unzip ./$SDKTOOLS_ZIP -d ./commandlinetools > ./log || ( cat ./log && exit 1 )
  rm -rf $SDKTOOLS_DIR && mkdir -p $SDKTOOLS_DIR
@@ -233,13 +226,20 @@ fvm install 2.5.3
 # git exception for the flutter directotry is require
 git config --global --add safe.directory /usr/lib/flutter
 
-echoInfo "INFO: Intstalling IPFS..."
-IPFS_TAR="go-ipfs_${IPFS_VERSION}_linux-${IPFS_ARCH}.tar.gz"
-cd /tmp && safeWget $IPFS_TAR "https://dist.ipfs.io/go-ipfs/${IPFS_VERSION}/$IPFS_TAR" "$IPFS_EXPECTED_HASH" > ./log || ( cat ./log && exit 1 )
+echoInfo "INFO: Intstalling IPFS tools..."
+IPFS_TAR="go-ipfs_${IPFS_VERSION}_linux-$(getArch).tar.gz"
+cd /tmp && safeWget $IPFS_TAR "https://dist.ipfs.io/go-ipfs/${IPFS_VERSION}/$IPFS_TAR" \
+ "bd4ab982bf2a50a7e8fc4493bdb0960d7271b27ec1e6d74ef68df404d16b2228,791fdc09d0e3d6f05d0581454b09e8c1d55cef4515170b695ff94075af183edf" > ./log || ( cat ./log && exit 1 )
 
 tar -xzf $IPFS_TAR && ./go-ipfs/install.sh
 ipfs --version
 ipfs init
+
+BIN_DEST="/usr/local/bin/ipfs-api" && cd /tmp && IPFS_DEB="/tmp/ipfs-api.deb" \
+  safeWget $IPFS_DEB "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/ipfs-api-linux-$(getArch).deb" \
+  "$KIRA_COSIGN_PUB" && dpkg-deb -x $IPFS_DEB ./ipfs-api && cp -fv "/tmp/ipfs-api/bin/ipfs-api" $BIN_DEST && chmod -v 755 $BIN_DEST
+
+ipfs-api version
 
 echoInfo "INFO: Updating dpeendecies (4)..."
 # CHROME_EXECUTABLE=""
@@ -346,4 +346,5 @@ EOL
 fi
 
 echoInfo "INFO: Cleanup..."
-rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR $SDKTOOLS_ZIP $GO_TAR $CDHELPER_ZIP ./dart-debug.zip
+rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR $IPFS_DEB $SDKTOOLS_ZIP $GO_TAR $CDHELPER_ZIP ./dart-debug.zip
+rm -rfv /tmp/ipfs-api
