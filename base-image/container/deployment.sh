@@ -12,7 +12,7 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.16.1"
-TOOLS_VERSION="v0.1.6"
+TOOLS_VERSION="v0.1.6-rc.02"
 IPFS_VERSION="v0.12.1"
 
 echo "Starting core dependency build..."
