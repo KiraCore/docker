@@ -65,7 +65,7 @@ OS_VERSION=linux && \
 
 ## Run Container Locally
 ```
-docker pull ghcr.io/kiracore/docker/base-image:v0.8.0.0
-docker run -i -t ghcr.io/kiracore/docker/base-image:v0.8.0.0 /bin/bash
+docker pull ghcr.io/kiracore/docker/base-image:v0.10.7
+docker run -i -t ghcr.io/kiracore/docker/base-image:v0.10.7 /bin/bash
 ```
 
