@@ -247,27 +247,12 @@ safeWget "$IPFS_DEB" "https://github.com/KiraCore/tools/releases/download/$TOOLS
 ipfs-api version
 
 echoInfo "INFO: Updating dpeendecies (4)..."
-# CHROME_EXECUTABLE=""
-# apt purge -y google-chrome  > ./log || echoWarn "WARNING: Failed to remove old goole-chrome or the app did not exist"
-# apt purge -y chromium  > ./log || echoWarn "WARNING: Failed to remove old chromium or the app did not exist"
-# apt purge -y chromium-browser  > ./log || echoWarn "WARNING: Failed to remove old chromium-browser or the app did not exist"
-# rm -rfv /var/cache/apt/archives/chromium* /usr/bin/chromedriver
-# apt --fix-broken install -y > ./log || ( cat ./log && exit 1 )
-
 # ref.: http://ftp.debian.org/debian/pool/main/c/chromium/
 apt update -y > ./log || ( cat ./log && exit 1 )
 apt install -y gconf-service gdebi-core libgconf-2-4 libappindicator1 fonts-liberation xvfb libxi6 libx11-xcb1 libxcomposite1 libxcursor1 lsb-release \
  libxdamage1 libxi-dev libxtst-dev libnss3 libcups2 libxss1 libxrandr2 libasound2 libatk1.0-0 libatk-bridge2.0-0 libpangocairo-1.0-0 libgtk-3-0 \
  libgbm1 libc6 libcairo2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgdk-pixbuf2.0-0 libglib2.0-0 libnspr4 libpango-1.0-0 libstdc++6 libx11-6 \
  libxcb1 libxext6 libxfixes3 libxrender1 libxtst6 xdg-utils libgbm-dev x11-apps > ./log || ( cat ./log && exit 1 )
-
-echoInfo "INFO: Installing firefox..."
-# Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-apt-get update -y > ./log || ( cat ./log && exit 1 )
-apt-get install -y firefox firefox-geckodriver libpci3 libegl-dev
-# xvfb-run firefox http://google.com
-# xvfb-run chromedriver --version
-# xvfb-run -e /dev/stdout firefox https://google.com
 
 if [ "$(getArch)" == "amd64" ] ; then
     # Installing google-chrome Dart Debug extension, ref.: https://chrome.google.com/webstore/detail/dart-debug-extension/?hl=en
@@ -314,7 +299,7 @@ if [ "$(getArch)" == "amd64" ] ; then
     mkdir -p $CHROME_WORK_DIR && chmod -R 777 $CHROME_WORK_DIR
 
     CHROME_DRIVER_FILE="chromedriver_linux64.zip"
-    wget https://chromedriver.storage.googleapis.com/100.0.4896.20/$CHROME_DRIVER_FILE
+    wget https://chromedriver.storage.googleapis.com/103.0.5060.53/$CHROME_DRIVER_FILE
     unzip $CHROME_DRIVER_FILE
     mv -fv chromedriver /usr/bin/chromedriver
     chmod +x /usr/bin/chromedriver
@@ -331,7 +316,7 @@ MemorySwapMax=0
 Type=simple
 User=$USERNAME
 WorkingDirectory=$KIRA_HOME
-ExecStart=$XVFB_FILE $CHROMEDRIVER_EXECUTABLE --port=4444 --verbose 
+ExecStart=$XVFB_FILE $CHROMEDRIVER_EXECUTABLE --port=4444 --whitelisted-ips="" --verbose 
 Restart=always
 RestartSec=5
 LimitNOFILE=4096
@@ -341,7 +326,7 @@ EOL
 
     systemctl daemon-reload
     systemctl enable chromedriver
-    # systemctl stop chromedriver
+    systemctl stop chromedriver
     # systemctl restart chromedriver
     # systemctl -l --no-pager status chromedriver
 
