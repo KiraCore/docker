@@ -291,13 +291,15 @@ if [ "$(getArch)" == "amd64" ] ; then
     install_chrome_extension $KIRA_HOME/.config/google-chrome/Default/Extensions "eljbmlghnomdjgdjmbdekegdkbabckhm" "Dart Debug Extension"
 
     GOOLGE_CHROME_FILE="google-chrome-stable_current_amd64.deb"
-    wget https://dl.google.com/linux/direct/$GOOLGE_CHROME_FILE
+    # ref.: wget https://dl.google.com/linux/direct/$GOOLGE_CHROME_FILE (v103)
+    wget https://ipfs.kira.network/ipfs/bafybeifrkquohyxgrmujjkh223mw2od6sf4x756u374evhrkzv3qykjmbu -O ./$GOOLGE_CHROME_FILE
     gdebi -n ./$GOOLGE_CHROME_FILE
     google-chrome --version
     # create chrome working directory
     CHROME_WORK_DIR=$KIRA_HOME/.local
     mkdir -p $CHROME_WORK_DIR && chmod -R 777 $CHROME_WORK_DIR
 
+    # Note that google-chrome & chromedriver versions MUST match
     CHROME_DRIVER_FILE="chromedriver_linux64.zip"
     wget https://chromedriver.storage.googleapis.com/103.0.5060.53/$CHROME_DRIVER_FILE
     unzip $CHROME_DRIVER_FILE
@@ -306,6 +308,8 @@ if [ "$(getArch)" == "amd64" ] ; then
     chromedriver --version
     CHROMEDRIVER_EXECUTABLE=$(which chromedriver)
     XVFB_FILE=$(which xvfb-run)
+    # Note: In certain cases xvfb might be required
+    # e.g.: ExecStart=$XVFB_FILE $CHROMEDRIVER_EXECUTABLE --port=4444 --whitelisted-ips="" --verbose 
 
     cat > /etc/systemd/system/chromedriver.service << EOL
 [Unit]
@@ -316,7 +320,7 @@ MemorySwapMax=0
 Type=simple
 User=$USERNAME
 WorkingDirectory=$KIRA_HOME
-ExecStart=$XVFB_FILE $CHROMEDRIVER_EXECUTABLE --port=4444 --whitelisted-ips="" --verbose 
+ExecStart=$CHROMEDRIVER_EXECUTABLE --port=4444 --whitelisted-ips="" --verbose 
 Restart=always
 RestartSec=5
 LimitNOFILE=4096
@@ -324,15 +328,19 @@ LimitNOFILE=4096
 WantedBy=default.target
 EOL
 
+    # Additionally start dbus
+    service dbus start
+    
+    # Start & test chromedriver
     systemctl daemon-reload
     systemctl enable chromedriver
-    systemctl stop chromedriver
-    # systemctl restart chromedriver
-    # systemctl -l --no-pager status chromedriver
+    systemctl restart chromedriver
+    systemctl -l --no-pager status chromedriver
+    curl --show-error --fail localhost:4444/status | bash-utils jsonParse ".value" | jq
 
-    # Additionally run dbus
-    # service dbus start
-    # service dbus stop    
+    # stop dbus & chromedriver
+    service dbus stop 
+    systemctl stop chromedriver
 fi
 
 echoInfo "INFO: Cleanup..."
