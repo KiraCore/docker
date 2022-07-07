@@ -165,7 +165,7 @@ New-NetFireWallRule -DisplayName 'WSL firewall unlock' -Direction Outbound -Loca
 New-NetFireWallRule -DisplayName 'WSL firewall unlock' -Direction Inbound -LocalPort 4444 -Action Allow -Protocol TCP
 
 # Launch Windows Defender Firewall -> Advanced Security
-# On the left pane select Outbound Rules -> New Rule -> Port -> 5555 -> Priv,Pub -> save
+# On the left pane select Outbound Rules -> New Rule -> Port -> 4444 -> Priv,Pub -> save
 
 # Get network interface IP
 

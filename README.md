@@ -26,6 +26,20 @@ f+mU9F/Qbfq25bBWV2+NlYMJv3KvKHNtu3Jknt6yizZjUV4b8WGfKBzFYw==
 
 ## Cosign Verification Example
 ```
-cosign verify --key ./cosign.pub ghcr.io/kiracore/docker/base-image:v0.10.9
+cosign verify --key ./cosign.pub ghcr.io/kiracore/docker/base-image:v0.11.1
 ```
 
+## Launch Container Locally
+```
+CONTAINER_NAME="base-image:v0.11.1"
+
+# download and enter container
+docker run -i -t ghcr.io/kiracore/docker/$CONTAINER_NAME /bin/bash
+
+# delete containers
+docker ps -a | awk '{ print $1,$2 }' | grep "ghcr.io/kiracore/docker/$CONTAINER_NAME" | awk '{print $1 }' | xargs -I {} docker rm {}
+
+# delete images
+docker rmi ghcr.io/kiracore/docker/$CONTAINER_NAME
+
+```

@@ -12,7 +12,7 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.16.1"
-TOOLS_VERSION="v0.2.5-rc.8"
+TOOLS_VERSION="v0.2.11"
 IPFS_VERSION="v0.12.1"
 
 echo "Starting core dependency build..."
@@ -68,18 +68,6 @@ FILE_NAME="bash-utils.sh" && \
  chmod -v 555 ./$FILE_NAME && ./$FILE_NAME bashUtilsSetup "/var/kiraglob" && . /etc/profile && \
  echoInfo "INFO: Installed bash-utils $(bash-utils bashUtilsVersion)"
 
-# go checksums: https://go.dev/dl/
-if [ "$(getArch)" == "arm64" ] ; then
-    DART_ARCH="arm64"
-    CDHELPER_ARCH="arm64"
-elif [ "$(getArch)" == "amd64" ] ; then
-    DART_ARCH="x64"
-    CDHELPER_ARCH="x64"
-else
-    echoErr "ERROR: Uknown architecture $(getArch)"
-    exit 1
-fi
-
 echoInfo "INFO: Updating dpeendecies (2)..."
 apt-get update -y > ./log || ( cat ./log && exit 1 )
 
@@ -126,8 +114,8 @@ echoInfo "INFO: Installing binaries..."
 
 GO_TAR="go$GO_VERSION.${OS_VERSION}-$(getArch).tar.gz"
 FLUTTER_TAR="flutter_${OS_VERSION}_$FLUTTER_VERSION.tar.xz"
-DART_ZIP="dartsdk-${OS_VERSION}-$DART_ARCH-release.zip"
-CDHELPER_ZIP="CDHelper-${OS_VERSION}-$CDHELPER_ARCH.zip"
+DART_ZIP="dartsdk-${OS_VERSION}-$(getArchX)-release.zip"
+CDHELPER_ZIP="CDHelper-${OS_VERSION}-$(getArchX).zip"
 
 echoInfo "INFO: Installing CDHelper tool"
 cd /tmp && safeWget ./$CDHELPER_ZIP "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/$CDHELPER_ZIP" \
@@ -144,10 +132,13 @@ rm /bin/CDHelper || echo "INFO: Failed to remove old symlink"
 ln -s $INSTALL_DIR/CDHelper /bin/CDHelper || echo "INFO: CDHelper symlink already exists" 
 CDHelper version
 
+# go checksums: https://go.dev/dl/
 echoInfo "INFO: Installing latest go version $GO_VERSION https://golang.org/doc/install ..."
 cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR \
- "fc4ad28d0501eaa9c9d6190de3888c9d44d8b5fb02183ce4ae93713f67b8a35b,e54bec97a1a5d230fc2f9ad0880fcbabb5888f30ed9666eca4a91c5a32e86cbc" && \
- tar -C /usr/local -xf $GO_TAR &>/dev/null && go version
+ "956f8507b302ab0bb747613695cdae10af99bbd39a90cae522b7c0302cc27245,beacbe1441bee4d7978b900136d1d6a71d150f0a9bb77e9d50c822065623a35a" > ./log || ( cat ./log && exit 1 )
+
+tar -C /usr/local -xf $GO_TAR &>/dev/null 
+go version
 
 echoInfo "INFO: Installing rust..."
 curl https://sh.rustup.rs -sSf | bash -s -- -y
