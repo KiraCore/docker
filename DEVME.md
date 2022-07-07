@@ -63,6 +63,15 @@ cd /home/asmodat/actions-runner
 ./config.sh remove
 ```
 
+Workflows runners cleanup
+
+```
+docker rm -vf $(docker ps -aq) || echo "WARNING: Failed to remove containers"
+docker rmi -f $(docker images -aq) || echo "WARNING: Failed to remove images"
+docker system prune -a -f  || echo "WARNING: Failed to prune data"
+```
+
+
 # Signatures
 
 All containers are signed with [cosign](https://github.com/sigstore/cosign/releases)
@@ -176,3 +185,4 @@ iptables -t nat -A OUTPUT -o lo -d 127.0.0.1 -p tcp --dport 4444 -j DNAT  --to-d
 
 # NOTE: To delete iptables entry run the same command but with '-D' flag instead of '-A' 
 ```
+

@@ -10,7 +10,7 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
 CDHELPER_VERSION="v0.6.51"
 SEKAI_VERSION="v0.2.1-rc.15"
 INTERX_VERSION="v0.4.11"
-TOOLS_VERSION="v0.2.11"
+TOOLS_VERSION="v0.2.12"
 COSIGN_VERSION="v1.7.2"
 
 cd $KIRA_BIN
@@ -57,12 +57,12 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     bash lsof bc dnsutils psmisc netcat coreutils binutils
 
 BIN_DEST="/usr/local/bin/CDHelper" && \
-  safeWget ./cdhelper.zip "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/CDHelper-linux-${ARCHITECURE}.zip" \
+  safeWget ./cdhelper.zip "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/CDHelper-${PLATFORM}-${ARCHITECURE}.zip" \
   "082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7,c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3" && \
   unzip -o ./cdhelper.zip -d "CDHelper" && cp -rfv "$KIRA_BIN/CDHelper" "$(dirname $BIN_DEST)" && chmod -Rv 755 $BIN_DEST && setGlobPath $BIN_DEST
 
 BIN_DEST="/usr/local/bin/sekaid" && \
-  safeWget ./sekaid.deb "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-linux-${ARCHITECURE}.deb" \
+  safeWget ./sekaid.deb "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSION/sekai-${PLATFORM}-${ARCHITECURE}.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./sekaid.deb ./sekaid && cp -fv "$KIRA_BIN/sekaid/bin/sekaid" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/sekai-utils.sh" && \
@@ -74,28 +74,28 @@ safeWget $FILE "https://github.com/KiraCore/sekai/releases/download/$SEKAI_VERSI
   "$KIRA_COSIGN_PUB" && chmod -v 755 $FILE && echo "source $FILE" >> /etc/profile && . /etc/profile
 
 BIN_DEST="/usr/local/bin/interxd" && \
-safeWget ./interx.deb "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-linux-${ARCHITECURE}.deb" \
+safeWget ./interx.deb "https://github.com/KiraCore/interx/releases/download/$INTERX_VERSION/interx-${PLATFORM}-${ARCHITECURE}.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./interx.deb ./interx && cp -fv "$KIRA_BIN/interx/bin/interx" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/tmconnect" && \
-  safeWget ./tmconnect.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmconnect-linux-${ARCHITECURE}.deb" \
+  safeWget ./tmconnect.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmconnect-${PLATFORM}-${ARCHITECURE}.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./tmconnect.deb ./tmconnect && cp -fv "$KIRA_BIN/tmconnect/bin/tmconnect" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/validator-key-gen" && \
-  safeWget ./validator-key-gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/validator-key-gen-linux-${ARCHITECURE}.deb" \
+  safeWget ./validator-key-gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/validator-key-gen-${PLATFORM}-${ARCHITECURE}.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./validator-key-gen.deb ./validator-key-gen && \
    cp -fv "$KIRA_BIN/validator-key-gen/bin/validator-key-gen" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/tmkms-key-import" && \
-  safeWget ./tmkms-key-import "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-linux-${ARCHITECURE}" \
+  safeWget ./tmkms-key-import "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/tmkms-key-import-${PLATFORM}-${ARCHITECURE}" \
   "$KIRA_COSIGN_PUB" && cp -fv "$KIRA_BIN/tmkms-key-import" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/bip39gen" && \
-  safeWget ./bip39gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/bip39gen-linux-${ARCHITECURE}.deb" \
+  safeWget ./bip39gen.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/bip39gen-${PLATFORM}-${ARCHITECURE}.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./bip39gen.deb ./bip39gen && cp -fv "$KIRA_BIN/bip39gen/bin/bip39gen" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 BIN_DEST="/usr/local/bin/ipfs-api" && \
-  safeWget ./ipfs-api.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/ipfs-api-linux-${ARCHITECURE}.deb" \
+  safeWget ./ipfs-api.deb "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/ipfs-api-${PLATFORM}-${ARCHITECURE}.deb" \
   "$KIRA_COSIGN_PUB" && dpkg-deb -x ./ipfs-api.deb ./ipfs-api && cp -fv "$KIRA_BIN/ipfs-api/bin/ipfs-api" $BIN_DEST && chmod -v 755 $BIN_DEST
 
 loadGlobEnvs

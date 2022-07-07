@@ -12,7 +12,7 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.16.1"
-TOOLS_VERSION="v0.2.11"
+TOOLS_VERSION="v0.2.12"
 IPFS_VERSION="v0.12.1"
 
 echo "Starting core dependency build..."
@@ -111,18 +111,6 @@ chmod 755 $SYSCTRL_DESTINATION
 systemctl --version
 
 echoInfo "INFO: Installing binaries..."
-
-
-function getArchX() {
-    local ARCH=$(uname -m)
-    if [[ "$ARCH" == *"arm"* ]] || [[ "$ARCH" == *"aarch"* ]] ; then
-        echo "arm64"
-    elif [[ "$ARCH" == *"x64"* ]] || [[ "$ARCH" == *"x86_64"* ]] || [[ "$ARCH" == *"amd64"* ]] || [[ "$ARCH" == *"amd"* ]] ; then
-            echo "x64"
-    else
-        echo "$ARCH"
-    fi
-}
 
 GO_TAR="go$GO_VERSION.${OS_VERSION}-$(getArch).tar.gz"
 FLUTTER_TAR="flutter_${OS_VERSION}_$FLUTTER_VERSION.tar.xz"
