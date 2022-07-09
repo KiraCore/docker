@@ -8,7 +8,7 @@ The default image used for building & installing essential tools
 # Latest FLutter & Dart releases info: https://docs.flutter.dev/development/tools/sdk/releases?tab=linux
 OS_VERSION=linux && \
  FLUTTER_CHANNEL="stable" && \
- FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL" \
+ FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL" \
  FLUTTER_TAR="flutter_${OS_VERSION,,}_$FLUTTER_VERSION.tar.xz" && cd /tmp && rm -fv $FLUTTER_TAR && \
  wget https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/${OS_VERSION,,}/$FLUTTER_TAR && \
  echo $(sha256sum ./$FLUTTER_TAR | awk '{ print $1 }')
