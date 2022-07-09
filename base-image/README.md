@@ -18,7 +18,7 @@ OS_VERSION=linux && \
 ```
 OS_VERSION=linux && \
  DART_CHANNEL_PATH="stable/release"
- DART_VERSION="2.16.1" && \
+ DART_VERSION="2.17.5" && \
  DART_ZIP_X64="dartsdk-${OS_VERSION,,}-x64-release.zip" && \
  DART_ZIP_ARM64="dartsdk-${OS_VERSION,,}-arm64-release.zip" && \
  wget https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL_PATH/$DART_VERSION/sdk/$DART_ZIP_X64 && \

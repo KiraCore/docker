@@ -9,9 +9,9 @@ OS_VERSION=$(uname) && OS_VERSION="${OS_VERSION,,}"
 GO_VERSION="1.18.3"
 CDHELPER_VERSION="v0.6.51"
 FLUTTER_CHANNEL="stable"
-FLUTTER_VERSION="2.10.3-$FLUTTER_CHANNEL"
+FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
-DART_VERSION="2.16.1"
+DART_VERSION="2.17.5"
 TOOLS_VERSION="v0.2.12"
 IPFS_VERSION="v0.12.1"
 
@@ -146,7 +146,7 @@ cargo --version
 
 echoInfo "INFO: Setting up essential flutter dependencies..."
 cd /tmp && safeWget ./$FLUTTER_TAR https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/${OS_VERSION}/$FLUTTER_TAR \
- "7e2a28d14d7356a5bbfe516f8a7c9fc0353f85fe69e5cf6af22be2c7c8b45566" > ./log || ( cat ./log && exit 1 )
+ "be1dd08cb18504ddf6d435044fd5e162a4a420b8c48fe66a0002eefe6c58fa0a" > ./log || ( cat ./log && exit 1 )
 
 mkdir -p /usr/lib # make sure flutter root directory exists
 tar -C /usr/lib -xf ./$FLUTTER_TAR
@@ -160,7 +160,7 @@ touch $FLUTTER_CACHE/engine-dart-sdk.stamp
 
 echoInfo "INFO: Installing latest dart $DART_ARCH version $DART_VERSION https://dart.dev/get-dart/archive ..."
 cd /tmp && safeWget $DART_ZIP https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL_PATH/$DART_VERSION/sdk/$DART_ZIP \
- "3cc63a0c21500bc5eb9671733843dcc20040b39fdc02f35defcf7af59f88d459,de9d1c528367f83bbd192bd565af5b7d9d48f76f79baa4c0e4cf64723e3fb8be" > ./log || ( cat ./log && exit 1 )
+ "0482ba914c7e9befc67d1ff0057bfcae354d6cfeb0d4716f1ff44623089a2688,0052467a23ec8d46523be0f29263881444e0da3228860eb6b69de0859aca2459" > ./log || ( cat ./log && exit 1 )
 unzip ./$DART_ZIP -d $FLUTTER_CACHE > ./log || ( cat ./log && exit 1 )
 
 echoInfo "INFO: Updating dpeendecies (4)..."
