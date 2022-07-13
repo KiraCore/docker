@@ -1,6 +1,3 @@
-
-## KIRA DOCKER IMAGES
-
-### Features:
-* added ipfs-api tool to base images
-* updated tools release
+Features:
+* updated tools release to `v0.2.14`
+* Removed dependency on IPFS

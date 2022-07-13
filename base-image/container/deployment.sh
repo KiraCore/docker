@@ -12,8 +12,7 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.17.5"
-TOOLS_VERSION="v0.2.13"
-IPFS_VERSION="v0.12.1"
+TOOLS_VERSION="v0.2.14"
 
 echo "Starting core dependency build..."
 apt-get update -y > ./log || ( cat ./log && exit 1 )
@@ -219,16 +218,6 @@ git config --global --add safe.directory /usr/lib/flutter
 
 echoInfo "INFO: Intstalling IPFS tools..."
 cd /tmp
-
-IPFS_TAR="go-ipfs_${IPFS_VERSION}_linux-$(getArch).tar.gz"
-
-safeWget "$IPFS_TAR" "https://dist.ipfs.io/go-ipfs/${IPFS_VERSION}/$IPFS_TAR" \
- "bd4ab982bf2a50a7e8fc4493bdb0960d7271b27ec1e6d74ef68df404d16b2228,791fdc09d0e3d6f05d0581454b09e8c1d55cef4515170b695ff94075af183edf" > ./log || ( cat ./log && exit 1 )
-
-tar -xzf "$IPFS_TAR" && ./go-ipfs/install.sh
-ipfs --version
-ipfs init
-
 BIN_DEST="/usr/local/bin/ipfs-api"
 IPFS_DEB="/tmp/ipfs-api.deb"
 
@@ -335,5 +324,5 @@ EOL
 fi
 
 echoInfo "INFO: Cleanup..."
-rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_TAR $IPFS_DEB $SDKTOOLS_ZIP $GO_TAR $CDHELPER_ZIP ./dart-debug.zip
+rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_DEB $SDKTOOLS_ZIP $GO_TAR $CDHELPER_ZIP ./dart-debug.zip
 rm -rfv /tmp/ipfs-api
