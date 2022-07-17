@@ -6,10 +6,14 @@ set -x
 KIRA_SETUP_VER=$(globGet KIRA_SETUP_VER "$GLOBAL_COMMON_RO")
 HALT_TASK=$(globGet HALT_TASK) && [ "${HALT_TASK,,}" != "true" ] && HALT_TASK="false"
 EXIT_TASK=$(globGet EXIT_TASK) && [ "${EXIT_TASK,,}" != "true" ] && EXIT_TASK="false"
-CFG_TASK=$(globGet CFG_TASK) && [ "${CFG_TASK,,}" == "true" ] && CFG_TASK="false"
-INIT_DONE=$(globGet INIT_DONE) && [ "${INIT_DONE,,}" == "true" ] && INIT_DONE="false"
+CFG_TASK=$(globGet CFG_TASK) && [ "${CFG_TASK,,}" != "true" ] && CFG_TASK="false"
+INIT_DONE=$(globGet INIT_DONE) && [ "${INIT_DONE,,}" != "true" ] && INIT_DONE="false"
 
-echoInfo "INFO: Staring $NODE_TYPE healthcheck $KIRA_SETUP_VER ..." >> ${COMMON_LOGS}/health.log
+echoInfo "INFO: $NODE_TYPE healthcheck $KIRA_SETUP_VER ..." >> ${COMMON_LOGS}/health.log
+echoInfo "     Hatling: $HALT_TASK" >> ${COMMON_LOGS}/health.log
+echoInfo "     Exiting: $HALT_TASK" >> ${COMMON_LOGS}/health.log
+echoInfo " Configuring: $HALT_TASK" >> ${COMMON_LOGS}/health.log
+echoInfo "Initializing: $HALT_TASK" >> ${COMMON_LOGS}/health.log
 
 echoInfo "INFO: Logs cleanup..."
 find "$COMMON_LOGS" -type f -size +16M -exec truncate --size=8M {} + || ( echoWarn "WARNING: Failed to truncate common logs" >> ${COMMON_LOGS}/health.log )

@@ -8,7 +8,7 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     software-properties-common curl wget git nginx apt-transport-https
 
 CDHELPER_VERSION="v0.6.51"
-SEKAI_VERSION="v0.2.1-rc.15"
+SEKAI_VERSION="v0.2.5-rc.19"
 INTERX_VERSION="v0.4.11"
 TOOLS_VERSION="v0.2.14"
 COSIGN_VERSION="v1.7.2"
