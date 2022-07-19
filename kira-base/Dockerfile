@@ -10,6 +10,7 @@ ENV GLOBAL_COMMON="${COMMON_DIR}/kiraglob"
 ENV GLOBAL_COMMON_RO="${COMMON_READ}/kiraglob"
 ENV SNAP_DIR="/snap"
 ENV ETC_PROFILE="/etc/profile"
+ENV HOSTS_PATH="/etc/hosts"
 
 # Env necessary for the individual child container setup
 ENV SELF_HOME=/self/home
