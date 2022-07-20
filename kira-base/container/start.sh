@@ -5,10 +5,6 @@ set -x
 KIRA_SETUP_VER=$(globGet KIRA_SETUP_VER "$GLOBAL_COMMON_RO")
 
 echoInfo "INFO: Staring $NODE_TYPE container $KIRA_SETUP_VER ..."
-
-HALT_TASK=$(globGet HALT_TASK) && [ "${HALT_TASK,,}" != "true" ] && HALT_TASK="false"
-EXIT_TASK=$(globGet EXIT_TASK) && [ "${EXIT_TASK,,}" != "true" ] && EXIT_TASK="false"
-CFG_TASK=$(globGet CFG_TASK) && [ "${CFG_TASK,,}" == "true" ] && CFG_TASK="false"
 timerStart "catching_up"
 timerStart "success"
 
@@ -18,8 +14,8 @@ if ($(isNaturalNumber $RESTART_COUNTER)) ; then
     globSet RESTART_TIME "$(date -u +%s)"
 fi
 
-while [ "$HALT_TASK" == "true" ] || [ "$EXIT_TASK" == "true" ] ; do
-    if [ "$EXIT_TASK" == "true" ] ; then
+while [ "$(globGet HALT_TASK)" == "true" ] || [ "$(globGet EXIT_TASK)" == "true" ] ; do
+    if [ "$(globGet EXIT_TASK)" == "true" ] ; then
         echoInfo "INFO: Ensuring that sekaid & interx processes are killed"
         globSet HALT_TASK true
         pkill -15 sekaid || echoWarn "WARNING: Failed to kill sekaid process (-15)"
