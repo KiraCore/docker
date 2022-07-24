@@ -46,4 +46,4 @@ RUN LC_ALL=C ${BUILD_SCRIPT} && rm -rf /var/lib/apt/lists/*
 
 HEALTHCHECK --interval=60s --timeout=600s --start-period=600s --retries=4 CMD ${HEALTHCHECK_SCRIPT}
 
-CMD ["sh", "-c", "/bin/bash ${START_SCRIPT} | tee -a ${COMMON_LOGS}/start.log ; test ${PIPESTATUS[0]} = 0"]
+CMD ["sh", "-c", "/bin/bash ${START_SCRIPT} 2>&1 | tee -a ${COMMON_LOGS}/start.log ; test ${PIPESTATUS[0]} = 0"]

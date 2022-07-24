@@ -19,7 +19,7 @@ while [ "$(globGet HALT_TASK)" == "true" ] || [ "$(globGet EXIT_TASK)" == "true"
         echoInfo "INFO: Ensuring that sekaid & interx processes are killed"
         globSet HALT_TASK true
         pkill -15 sekaid || echoWarn "WARNING: Failed to kill sekaid process (-15)"
-        pkill -9 interx || echoWarn "WARNING: Failed to kill interx process (-9)"
+        pkill -9 interxd || echoWarn "WARNING: Failed to kill interx process (-9)"
         globSet EXIT_TASK false
     fi
     echoInfo "INFO: Waiting for container to be unhalted..."
