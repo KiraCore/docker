@@ -9,7 +9,7 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
 
 CDHELPER_VERSION="v0.6.51"
 SEKAI_VERSION="v0.2.5-rc.19"
-INTERX_VERSION="v0.4.13"
+INTERX_VERSION="v0.4.14"
 TOOLS_VERSION="v0.2.17"
 COSIGN_VERSION="v1.7.2"
 
