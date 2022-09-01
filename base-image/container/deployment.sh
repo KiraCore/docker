@@ -6,7 +6,7 @@ set -x
 # define versions of the software to install manually
 ARCHITECTURE=$(uname -m)
 OS_VERSION=$(uname) && OS_VERSION="${OS_VERSION,,}"
-GO_VERSION="1.18.3"
+GO_VERSION="1.19"
 # CDHELPER_VERSION="v0.6.51"
 FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
