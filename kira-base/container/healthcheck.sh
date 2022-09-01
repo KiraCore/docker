@@ -25,10 +25,17 @@ find "/var/log" -type f -size +64M -exec truncate --size=8M {} + || ( echoWarn "
 echoInfo "INFO: Logs cleanup finalized"
 
 if [ "${EXIT_TASK,,}" == "true" ]; then
-    echoInfo "INFO: Ensuring interx process is killed, process exit was requested" >> ${COMMON_LOGS}/health.log
+    echoInfo "INFO: Ensuring that ${NODE_TYPE,,} process is killed, a gracefull process exit was requested" >> ${COMMON_LOGS}/health.log
     globSet HALT_TASK "true"
-    pkill -15 sekaid || ( echoWarn "WARNING: Failed to kill sekaid process" >> ${COMMON_LOGS}/health.log )
-    pkill -9 interx || ( echoWarn "WARNING: Failed to kill interx process" >> ${COMMON_LOGS}/health.log )
+    if [ "${NODE_TYPE,,}" == "sentry" ] || [ "${NODE_TYPE,,}" == "seed" ] || [ "${NODE_TYPE,,}" == "validator" ]; then
+       pkill -15 sekaid || ( echoWarn "WARNING: Failed to kill sekaid process" >> ${COMMON_LOGS}/health.log )
+    elif [ "${NODE_TYPE,,}" == "interx" ]; then
+         pkill -9 interx || ( echoWarn "WARNING: Failed to kill interx process" >> ${COMMON_LOGS}/health.log )
+    elif [ "${NODE_TYPE,,}" == "bitcoin" ]; then
+        bitcoin-cli -datadir=$BITCOIN_DATA stop || ( echoWarn "WARNING: Failed to bitcoin-cli stop bitcoind process" >> ${COMMON_LOGS}/health.log )
+    else
+        echoErr "ERROR: Unknown node type '$NODE_TYPE', process can NOT be killed!" >> ${COMMON_LOGS}/health.log
+    fi
     globSet EXIT_TASK "false"
 fi
 
@@ -47,6 +54,8 @@ elif [ "${NODE_TYPE,,}" == "validator" ]; then
     /bin/sh -c "/bin/bash ${COMMON_DIR}/validator/healthcheck.sh 2>&1 | tee -a ${COMMON_LOGS}/health.log ; test ${PIPESTATUS[0]} = 0"
 elif [ "${NODE_TYPE,,}" == "interx" ]; then
     /bin/sh -c "/bin/bash ${COMMON_DIR}/interx/healthcheck.sh 2>&1 | tee -a ${COMMON_LOGS}/health.log ; test ${PIPESTATUS[0]} = 0"
+elif [ "${NODE_TYPE,,}" == "bitcoin" ]; then
+    /bin/sh -c "/bin/bash ${COMMON_DIR}/bitcoin/healthcheck.sh 2>&1 | tee -a ${COMMON_LOGS}/health.log ; test ${PIPESTATUS[0]} = 0"
 else
-    echoErr "ERROR: Unknown node type '$NODE_TYPE'" >> ${COMMON_LOGS}/health.log
+    echoErr "ERROR: Unknown node type '$NODE_TYPE', healthcheck can NOT be executed!" >> ${COMMON_LOGS}/health.log
 fi

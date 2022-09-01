@@ -1,3 +1,3 @@
 Features:
-* updated tools release to `v0.2.14`
-* Removed dependency on IPFS
+* updated tools release to `v0.2.19`
+* Removed dependency on CDHelper & rust

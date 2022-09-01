@@ -26,20 +26,26 @@ f+mU9F/Qbfq25bBWV2+NlYMJv3KvKHNtu3Jknt6yizZjUV4b8WGfKBzFYw==
 
 ## Cosign Verification Example
 ```
-cosign verify --key ./cosign.pub ghcr.io/kiracore/docker/base-image:v0.11.1
+cosign verify --key ./cosign.pub ghcr.io/kiracore/docker/base-image:v0.12.0
 ```
 
 ## Launch Container Locally
 ```
-CONTAINER_NAME="base-image:v0.11.1"
+# To launch test container run
+BASE_NAME="test" && \
+ BASE_IMG="ghcr.io/kiracore/docker/kira-base:v0.11.4" && \
+ docker run -i -t -d --privileged --net bridge --name $BASE_NAME --hostname test.local $BASE_IMG /bin/bash
 
-# download and enter container
-docker run -i -t ghcr.io/kiracore/docker/$CONTAINER_NAME /bin/bash
+# Note: If you want to run an extra container inside the KIRA Manager, replace '--net bridge' flag with '--net kiranet'
 
-# delete containers
-docker ps -a | awk '{ print $1,$2 }' | grep "ghcr.io/kiracore/docker/$CONTAINER_NAME" | awk '{print $1 }' | xargs -I {} docker rm {}
+# Find container ID by Name
+id=$(timeout 3 docker ps --no-trunc -aqf "name=^${BASE_NAME}$" 2> /dev/null || echo -n "") && echo $id
 
-# delete images
-docker rmi ghcr.io/kiracore/docker/$CONTAINER_NAME
+# To start existing container
+# one liner: docker start -i $(timeout 3 docker ps --no-trunc -aqf "name=^${BASE_NAME}$" 2> /dev/null || echo -n "")
+docker start -i $id
 
+# Delete specific container
+# one liner: docker rm -f $(timeout 3 docker ps --no-trunc -aqf "name=^${BASE_NAME}$" 2> /dev/null || echo -n "")
+docker rm -f $id
 ```

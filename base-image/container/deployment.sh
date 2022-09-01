@@ -7,12 +7,12 @@ set -x
 ARCHITECTURE=$(uname -m)
 OS_VERSION=$(uname) && OS_VERSION="${OS_VERSION,,}"
 GO_VERSION="1.18.3"
-CDHELPER_VERSION="v0.6.51"
+# CDHELPER_VERSION="v0.6.51"
 FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.17.5"
-TOOLS_VERSION="v0.2.17"
+TOOLS_VERSION="v0.2.19"
 
 echo "Starting core dependency build..."
 apt-get update -y > ./log || ( cat ./log && exit 1 )
@@ -114,34 +114,34 @@ echoInfo "INFO: Installing binaries..."
 GO_TAR="go$GO_VERSION.${OS_VERSION}-$(getArch).tar.gz"
 FLUTTER_TAR="flutter_${OS_VERSION}_$FLUTTER_VERSION.tar.xz"
 DART_ZIP="dartsdk-${OS_VERSION}-$(getArchX)-release.zip"
-CDHELPER_ZIP="CDHelper-${OS_VERSION}-$(getArchX).zip"
-
-echoInfo "INFO: Installing CDHelper tool"
-cd /tmp && safeWget ./$CDHELPER_ZIP "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/$CDHELPER_ZIP" \
- "082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7,c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3" > ./log || ( cat ./log && exit 1 )
- 
-INSTALL_DIR="/usr/local/bin/CDHelper"
-rm -rfv $INSTALL_DIR
-mkdir -pv $INSTALL_DIR
-unzip $CDHELPER_ZIP -d $INSTALL_DIR > ./log || ( cat ./log && exit 1 )
-chmod -R 555 $INSTALL_DIR
- 
-ls -l /bin/CDHelper || echo "INFO: Symlink not found"
-rm /bin/CDHelper || echo "INFO: Failed to remove old symlink"
-ln -s $INSTALL_DIR/CDHelper /bin/CDHelper || echo "INFO: CDHelper symlink already exists" 
-CDHelper version
+# CDHELPER_ZIP="CDHelper-${OS_VERSION}-$(getArchX).zip"
+# 
+# echoInfo "INFO: Installing CDHelper tool"
+# cd /tmp && safeWget ./$CDHELPER_ZIP "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/$CDHELPER_ZIP" \
+#  "082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7,c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3" > ./log || ( cat ./log && exit 1 )
+#  
+# INSTALL_DIR="/usr/local/bin/CDHelper"
+# rm -rfv $INSTALL_DIR
+# mkdir -pv $INSTALL_DIR
+# unzip $CDHELPER_ZIP -d $INSTALL_DIR > ./log || ( cat ./log && exit 1 )
+# chmod -R 555 $INSTALL_DIR
+#  
+# ls -l /bin/CDHelper || echo "INFO: Symlink not found"
+# rm /bin/CDHelper || echo "INFO: Failed to remove old symlink"
+# ln -s $INSTALL_DIR/CDHelper /bin/CDHelper || echo "INFO: CDHelper symlink already exists" 
+# CDHelper version
 
 # go checksums: https://go.dev/dl/
 echoInfo "INFO: Installing latest go version $GO_VERSION https://golang.org/doc/install ..."
 cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR \
- "956f8507b302ab0bb747613695cdae10af99bbd39a90cae522b7c0302cc27245,beacbe1441bee4d7978b900136d1d6a71d150f0a9bb77e9d50c822065623a35a" > ./log || ( cat ./log && exit 1 )
+ "464b6b66591f6cf055bc5df90a9750bf5fbc9d038722bb84a9d56a2bea974be6,efa97fac9574fc6ef6c9ff3e3758fb85f1439b046573bf434cccb5e012bd00c8" > ./log || ( cat ./log && exit 1 )
 
 tar -C /usr/local -xf $GO_TAR &>/dev/null 
 go version
 
-echoInfo "INFO: Installing rust..."
-curl https://sh.rustup.rs -sSf | bash -s -- -y
-cargo --version
+# echoInfo "INFO: Installing rust..."
+# curl https://sh.rustup.rs -sSf | bash -s -- -y
+# cargo --version
 
 echoInfo "INFO: Setting up essential flutter dependencies..."
 cd /tmp && safeWget ./$FLUTTER_TAR https://storage.googleapis.com/flutter_infra_release/releases/$FLUTTER_CHANNEL/${OS_VERSION}/$FLUTTER_TAR \
@@ -324,5 +324,6 @@ EOL
 fi
 
 echoInfo "INFO: Cleanup..."
-rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_DEB $SDKTOOLS_ZIP $GO_TAR $CDHELPER_ZIP ./dart-debug.zip
+rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_DEB $SDKTOOLS_ZIP $GO_TAR ./dart-debug.zip
+# rm -fv $DART_ZIP $FLUTTER_TAR $IPFS_DEB $SDKTOOLS_ZIP $GO_TAR $CDHELPER_ZIP ./dart-debug.zip
 rm -rfv /tmp/ipfs-api
