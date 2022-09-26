@@ -9,7 +9,7 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
 
 BTC_VERSION="23.0"
 SEKAI_VERSION="v0.3.1.23"
-INTERX_VERSION="v0.4.18"
+INTERX_VERSION="v0.4.19"
 TOOLS_VERSION="v0.2.20"
 COSIGN_VERSION="v1.7.2"
 
