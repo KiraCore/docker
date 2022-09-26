@@ -6,8 +6,7 @@ set -x
 # define versions of the software to install manually
 ARCHITECTURE=$(uname -m)
 OS_VERSION=$(uname) && OS_VERSION="${OS_VERSION,,}"
-GO_VERSION="1.19"
-# CDHELPER_VERSION="v0.6.51"
+GO_VERSION="1.19.1"
 FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
@@ -114,27 +113,11 @@ echoInfo "INFO: Installing binaries..."
 GO_TAR="go$GO_VERSION.${OS_VERSION}-$(getArch).tar.gz"
 FLUTTER_TAR="flutter_${OS_VERSION}_$FLUTTER_VERSION.tar.xz"
 DART_ZIP="dartsdk-${OS_VERSION}-$(getArchX)-release.zip"
-# CDHELPER_ZIP="CDHelper-${OS_VERSION}-$(getArchX).zip"
-# 
-# echoInfo "INFO: Installing CDHelper tool"
-# cd /tmp && safeWget ./$CDHELPER_ZIP "https://github.com/asmodat/CDHelper/releases/download/$CDHELPER_VERSION/$CDHELPER_ZIP" \
-#  "082e05210f93036e0008658b6c6bd37ab055bac919865015124a0d72e18a45b7,c2e40c7143f4097c59676f037ac6eaec68761d965bd958889299ab32f1bed6b3" > ./log || ( cat ./log && exit 1 )
-#  
-# INSTALL_DIR="/usr/local/bin/CDHelper"
-# rm -rfv $INSTALL_DIR
-# mkdir -pv $INSTALL_DIR
-# unzip $CDHELPER_ZIP -d $INSTALL_DIR > ./log || ( cat ./log && exit 1 )
-# chmod -R 555 $INSTALL_DIR
-#  
-# ls -l /bin/CDHelper || echo "INFO: Symlink not found"
-# rm /bin/CDHelper || echo "INFO: Failed to remove old symlink"
-# ln -s $INSTALL_DIR/CDHelper /bin/CDHelper || echo "INFO: CDHelper symlink already exists" 
-# CDHelper version
 
 # go checksums: https://go.dev/dl/
 echoInfo "INFO: Installing latest go version $GO_VERSION https://golang.org/doc/install ..."
 cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR \
- "464b6b66591f6cf055bc5df90a9750bf5fbc9d038722bb84a9d56a2bea974be6,efa97fac9574fc6ef6c9ff3e3758fb85f1439b046573bf434cccb5e012bd00c8" > ./log || ( cat ./log && exit 1 )
+ "acc512fbab4f716a8f97a8b3fbaa9ddd39606a28be6c2515ef7c6c6311acffde,49960821948b9c6b14041430890eccee58c76b52e2dbaafce971c3c38d43df9f" > ./log || ( cat ./log && exit 1 )
 
 tar -C /usr/local -xf $GO_TAR &>/dev/null 
 go version

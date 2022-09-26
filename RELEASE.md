@@ -1,3 +1,3 @@
 Features:
-* updated tools release to `v0.2.19`
-* Removed dependency on CDHelper & rust
+* updated sekaid release to `v0.3.1.23`
+* Updated golang version to `go1.19.1`
