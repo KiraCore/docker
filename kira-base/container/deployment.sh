@@ -7,13 +7,13 @@ apt-get update -y
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
     software-properties-common curl wget git nginx apt-transport-https
 
-BTC_VERSION="23.0"
-SEKAI_VERSION="v0.3.1.24"
-INTERX_VERSION="v0.4.19"
+BTC_VERSION="24.0.1"
+SEKAI_VERSION="v0.3.4.28"
+INTERX_VERSION="v0.4.23"
 TOOLS_VERSION="v0.2.20"
 COSIGN_VERSION="v1.7.2"
 
-BTC_CHECKUSMS="06f4c78271a77752ba5990d60d81b1751507f77efda1e5981b4e92fd4d9969fb,952c574366aff76f6d6ad1c9ee45a361d64fa04155e973e926dfe7e26f9703a3,2cca490c1f2842884a3c5b0606f179f9f937177da4eadd628e3f7fd7e25d26d0"
+BTC_CHECKUSMS="37d7660f0277301744e96426bbb001d2206b8d4505385dfdeedf50c09aaaef60,49df6e444515d457ea0b885d66f521f2a26ca92ccf73d5296082e633544253bf,90ed59e86bfda1256f4b4cad8cc1dd77ee0efec2492bcb5af61402709288b62c,06f4c78271a77752ba5990d60d81b1751507f77efda1e5981b4e92fd4d9969fb,078f96b1e92895009c798ab827fb3fde5f6719eee886bd0c0e93acab18ea4865"
 
 cd $KIRA_BIN
 

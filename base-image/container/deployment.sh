@@ -6,7 +6,7 @@ set -x
 # define versions of the software to install manually
 ARCHITECTURE=$(uname -m)
 OS_VERSION=$(uname) && OS_VERSION="${OS_VERSION,,}"
-GO_VERSION="1.19.1"
+GO_VERSION="1.19.4"
 FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
@@ -72,17 +72,20 @@ apt-get update -y > ./log || ( cat ./log && exit 1 )
 echoInfo "INFO: Installing core dpeendecies..."
 apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-essential --allow-change-held-packages \
     file build-essential net-tools hashdeep make ca-certificates p7zip-full lsof libglu1-mesa bash gnupg \
-    nodejs node-gyp python python3.10 python3.10-distutils python3.10-dev python3.10-venv tar unzip xz-utils \
+    nodejs node-gyp python3.11 python3.11-distutils python3.11-dev python3.11-venv tar unzip xz-utils \
     yarn zip protobuf-compiler golang-goprotobuf-dev golang-grpc-gateway golang-github-grpc-ecosystem-grpc-gateway-dev \
     clang cmake gcc g++ pkg-config libudev-dev libusb-1.0-0-dev curl iputils-ping nano openssl dos2unix dbus > ./log || ( cat ./log && exit 1 )
 
 # NOTE: python3-pip is not compatible, use boottrap instead:
-curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
-python3.10 -m pip install --upgrade pip setuptools wheel
+curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+python3.11 -m pip install --upgrade pip setuptools wheel
 
-git clone https://github.com/pyinstaller/pyinstaller.git -b v4.10
-cd ./pyinstaller/bootloader && python3.10 ./waf all
-cd .. && python3.10 setup.py install
+# installing pyinstaller v5.7.0, commit hash b8ba192e05705b217c8e2a217d51252dfb0b87c9
+git clone https://github.com/pyinstaller/pyinstaller.git 
+cd ./pyinstaller
+git checkout b8ba192e05705b217c8e2a217d51252dfb0b87c9
+cd ./bootloader && python3.11 ./waf all
+cd .. && pip install pyinstaller
 cd ..
 
 pyinstaller --version
@@ -117,7 +120,7 @@ DART_ZIP="dartsdk-${OS_VERSION}-$(getArchX)-release.zip"
 # go checksums: https://go.dev/dl/
 echoInfo "INFO: Installing latest go version $GO_VERSION https://golang.org/doc/install ..."
 cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR \
- "acc512fbab4f716a8f97a8b3fbaa9ddd39606a28be6c2515ef7c6c6311acffde,49960821948b9c6b14041430890eccee58c76b52e2dbaafce971c3c38d43df9f" > ./log || ( cat ./log && exit 1 )
+ "c9c08f783325c4cf840a94333159cc937f05f75d36a8b307951d5bd959cf2ab8,9df122d6baf6f2275270306b92af3b09d7973fb1259257e284dba33c0db14f1b" > ./log || ( cat ./log && exit 1 )
 
 tar -C /usr/local -xf $GO_TAR &>/dev/null 
 go version
