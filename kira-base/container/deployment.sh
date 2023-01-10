@@ -8,7 +8,7 @@ apt-get install -y --allow-unauthenticated --allow-downgrades --allow-remove-ess
     software-properties-common curl wget git nginx apt-transport-https
 
 BTC_VERSION="24.0.1"
-SEKAI_VERSION="v0.3.4.28"
+SEKAI_VERSION="v0.3.5.29"
 INTERX_VERSION="v0.4.23"
 TOOLS_VERSION="v0.2.20"
 COSIGN_VERSION="v1.7.2"

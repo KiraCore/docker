@@ -22,7 +22,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     ## local registry only
     ## ref.: https://stackoverflow.com/questions/63887031/build-docker-image-locally-in-github-actions-using-docker-build-push-action
     #services:
@@ -151,18 +151,6 @@ jobs:
             org.opencontainers.image.url=ghcr.io/kiracore/docker/base-image:${{ env.RELEASE_VER }}
             org.opencontainers.image.source=https://github.com/KiraCore/docker/base-image
             org.opencontainers.image.title=base-image
-       # # Build and push Docker image with Buildx (don't push on PR)
-       # # https://github.com/docker/build-push-action
-       # - name: Build and push Docker base-image image (local)
-       #   id: build-and-push-base-local
-       #   uses: docker/build-push-action@v2.10.0
-       #   with:
-       #     context: ./base-image
-       #     file: ./base-image/Dockerfile
-       #     load: true
-       #     tags: localhost:5000/base-image:${{ env.RELEASE_VER }}
-       #     # labels: ${{ steps.meta-base.outputs.labels }}
-       #     # platforms: linux/amd64,linux/arm64
       - name: Build and push Docker base-image image
         id: build-and-push-base
         # ref. https://github.com/docker/build-push-action, v2.10.0

@@ -26,7 +26,7 @@ f+mU9F/Qbfq25bBWV2+NlYMJv3KvKHNtu3Jknt6yizZjUV4b8WGfKBzFYw==
 
 ## Cosign Verification Example
 ```
-cosign verify --key ./cosign.pub ghcr.io/kiracore/docker/base-image:v0.12.0
+cosign verify --key ./cosign.pub ghcr.io/kiracore/docker/base-image:v0.13.0
 ```
 
 ## Launch Container Locally
