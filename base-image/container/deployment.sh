@@ -11,7 +11,8 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.17.5"
-TOOLS_VERSION="v0.2.20"
+TOOLS_VERSION="v0.3.0"
+COSIGN_VERSION="v1.13.1"
 
 echo "Starting core dependency build..."
 apt-get update -y > ./log || ( cat ./log && exit 1 )
@@ -45,9 +46,16 @@ ulimit -n
 echo "INFO: Installing cosign"
 if [[ "$(uname -m)" == *"ar"* ]] ; then ARCH="arm64"; else ARCH="amd64" ; fi && echo $ARCH && \
 PLATFORM=$(uname) && FILE_NAME=$(echo "cosign-${PLATFORM}-${ARCH}" | tr '[:upper:]' '[:lower:]') && \
- wget https://github.com/sigstore/cosign/releases/download/v1.7.2/$FILE_NAME && chmod +x -v ./$FILE_NAME && \
- mv -fv ./$FILE_NAME /usr/local/bin/cosign
+ wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/$FILE_NAME && chmod +x -v ./$FILE_NAME
 
+COSIGN_HASH_ARM="a50651a67b42714d6f1a66eb6773bf214dacae321f04323c0885f6a433051f95"
+COSIGN_HASH_AMD="a7a79a52c7747e2c21554cad4600e6c7130c0429017dd258f9c558d957fa9090"
+if [ "$FILE_HASH" != "$COSIGN_HASH_ARM" ] && [ "$FILE_HASH" != "$COSIGN_HASH_AMD" ] ; then
+    echoErr "ERROR: Failed to download cosign tool, expected checksum to be '$COSIGN_HASH', but got '$FILE_HASH'"
+    exit 1
+fi
+
+mv -fv ./$FILE_NAME /usr/local/bin/cosign
 cosign version
 
 cat > $KIRA_COSIGN_PUB << EOL
