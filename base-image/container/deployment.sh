@@ -48,10 +48,12 @@ if [[ "$(uname -m)" == *"ar"* ]] ; then ARCH="arm64"; else ARCH="amd64" ; fi && 
 PLATFORM=$(uname) && FILE_NAME=$(echo "cosign-${PLATFORM}-${ARCH}" | tr '[:upper:]' '[:lower:]') && \
  wget https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/$FILE_NAME && chmod +x -v ./$FILE_NAME
 
+FILE_HASH=$(sha256sum ./$FILE_NAME | awk '{ print $1 }' | xargs || echo -n "")
+
 COSIGN_HASH_ARM="a50651a67b42714d6f1a66eb6773bf214dacae321f04323c0885f6a433051f95"
 COSIGN_HASH_AMD="a7a79a52c7747e2c21554cad4600e6c7130c0429017dd258f9c558d957fa9090"
 if [ "$FILE_HASH" != "$COSIGN_HASH_ARM" ] && [ "$FILE_HASH" != "$COSIGN_HASH_AMD" ] ; then
-    echoErr "ERROR: Failed to download cosign tool, expected checksum to be '$COSIGN_HASH', but got '$FILE_HASH'"
+    echoErr "ERROR: Failed to download cosign tool, expected checksum to be '$COSIGN_HASH_ARM' or '$COSIGN_HASH_AMD', but got '$FILE_HASH'"
     exit 1
 fi
 
