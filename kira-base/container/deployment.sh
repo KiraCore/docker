@@ -105,7 +105,7 @@ echoInfo "INFO: Installed sekai-utils: " && sekaiUtilsVersion
 echoInfo "INFO: Installed sekaid: " && sekaid version
 echoInfo "INFO: Installed interxd: " && interxd version
 echoInfo "INFO: Installed tmconnect: " && tmconnect version
-echoInfo "INFO: Installed validator-key-gen: " && validator-key-gen --version
+echoInfo "INFO: Installed validator-key-gen: " && validator-key-gen --help
 echoInfo "INFO: Installed tmkms-key-import: " && tmkms-key-import version
 echoInfo "INFO: Installed bip39gen: " && bip39gen version
 echoInfo "INFO: Installed ipfs-api: " && ipfs-api version
