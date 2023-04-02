@@ -11,7 +11,7 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.17.5"
-TOOLS_VERSION="v0.3.41"
+TOOLS_VERSION="v0.3.42"
 COSIGN_VERSION="v2.0.0"
 
 echo "Starting core dependency build..."
