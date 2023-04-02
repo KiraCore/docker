@@ -6,12 +6,12 @@ set -x
 # define versions of the software to install manually
 ARCHITECTURE=$(uname -m)
 OS_VERSION=$(uname) && OS_VERSION="${OS_VERSION,,}"
-GO_VERSION="1.19.5"
+GO_VERSION="1.20.2"
 FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.17.5"
-TOOLS_VERSION="v0.3.38"
+TOOLS_VERSION="v0.3.41"
 COSIGN_VERSION="v2.0.0"
 
 echo "Starting core dependency build..."
@@ -130,7 +130,7 @@ DART_ZIP="dartsdk-${OS_VERSION}-$(getArchX)-release.zip"
 # go checksums: https://go.dev/dl/
 echoInfo "INFO: Installing latest go version $GO_VERSION https://golang.org/doc/install ..."
 cd /tmp && safeWget ./$GO_TAR https://dl.google.com/go/$GO_TAR \
- "36519702ae2fd573c9869461990ae550c8c0d955cd28d2827a6b159fda81ff95,fc0aa29c933cec8d76f5435d859aaf42249aa08c74eb2d154689ae44c08d23b3" > ./log || ( cat ./log && exit 1 )
+ "4eaea32f59cde4dc635fbc42161031d13e1c780b87097f4b4234cfce671f1768,78d632915bb75e9a6356a47a42625fd1a785c83a64a643fedd8f61e31b1b3bef" > ./log || ( cat ./log && exit 1 )
 
 tar -C /usr/local -xf $GO_TAR &>/dev/null 
 go version
