@@ -4,8 +4,8 @@ KIRA Docker Images
 # Workflows
 
 In order to have ability to modify & push workflows to github from the local machines
-*  Generate a "Personal Access Token" with workflow rights
-*  Change Remote url to https://YOUR_USERNAME:YOUR_TOKEN@github.com/KiraCore/docker.git
+*  Generate a `Personal Access Token` with workflow rights
+*  Change Remote url to `https://YOUR_USERNAME:YOUR_TOKEN@github.com/KiraCore/docker.git`
 
 Not all actions can be run on AMD64, a runner called `github-actions-arm64-runner-1` run under `su - asmodat`. This machine is essential to enable build of ARM64 binaries (e.g. using pyinstall). The runner requires its job to run perpetually thus a dedicated systemd service must be in place:
 
