@@ -1,0 +1,225 @@
+name: Docker
+
+on:
+  push:
+    branches: [ release/v*.*.* ]
+    # Publish semver tags as releases.
+    tags: [ 'v*.*.*' ]
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME_BASE: ${{ github.repository }}/base-image
+  IMAGE_NAME_CORS: ${{ github.repository }}/cors-anywhere
+  IMAGE_NAME_KIRA: ${{ github.repository }}/kira-base
+  GITHUB_BRANCH: ${{ github.head_ref || github.ref_name }} 
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+    steps:
+      # Work around https://github.com/actions/checkout/issues/760
+      - name: Add safe.directory
+        run: |
+          git config --global --add safe.directory /github/workspace
+          git config --global --add safe.directory $PWD
+      # ref.: https://github.com/actions/checkout, v3.5.0
+      - name: Checkout repository
+        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+      - name: Extract branch name on push
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          echo "SOURCE_BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+          echo "DESTINATION_BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+      - name: Extract branch name on pull request
+        if: github.event_name == 'pull_request'
+        env:
+          REF_BRANCH: ${{ github.event.pull_request.head.ref }}
+          BASE_REF_BRANCH: ${{ github.base_ref }}
+        shell: bash
+        run: |
+          echo "SOURCE_BRANCH=$(echo ${{ env.REF_BRANCH }})" >> $GITHUB_ENV
+          echo "DESTINATION_BRANCH=$(echo ${{ env.BASE_REF_BRANCH }})" >> $GITHUB_ENV
+      - name: Setup Variables
+        shell: bash
+        run: |
+          set -x
+          chmod -Rv 555 ./scripts
+          VERSION_REGEX="^(v?)([0-9]+)\.([0-9]+)\.([0-9]+)(-?)([a-zA-Z]+)?(\.?([0-9]+)?)$"
+          SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
+          SOURCE_BRANCH_VER=$(echo $SOURCE_BRANCH  | cut -d "/" -f 2)
+          GITHUB_EVENT_NAME=${{ github.event_name }}
+          echo "GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME" >> $GITHUB_ENV
+          RELEASE_VER="$(./scripts/version.sh)" && echo "RELEASE_VER=$RELEASE_VER" >> $GITHUB_ENV
+          RELEASE_BRANCH="release/$RELEASE_VER" && echo "RELEASE_BRANCH=$RELEASE_BRANCH" >> $GITHUB_ENV
+          echo "DEFAULT_BRANCH=master" >> $GITHUB_ENV
+          REPOSITORY_NAME="${{ github.event.repository.name }}" && echo "REPOSITORY_NAME=$REPOSITORY_NAME" >> $GITHUB_ENV
+          git ls-remote https://github.com/kiracore/$REPOSITORY_NAME | egrep -q "refs/tags/${RELEASE_VER}$" && echo "RELEASE_EXISTS=true" >> $GITHUB_ENV || echo "RELEASE_EXISTS=false" >> $GITHUB_ENV
+          git show-branch "remotes/origin/$RELEASE_VER" && echo "TARGET_BRANCH_EXISTS=true" >> $GITHUB_ENV || echo "TARGET_BRANCH_EXISTS=false" >> $GITHUB_ENV
+          ( [ "$RELEASE_BRANCH" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH_VER" =~ $VERSION_REGEX ]] ) && echo "PUBLISH_IMAGES=true" >> $GITHUB_ENV || echo "PUBLISH_IMAGES=false" >> $GITHUB_ENV 
+          ( [ "$RELEASE_BRANCH" == "$SOURCE_BRANCH" ] && [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$SOURCE_BRANCH_VER" =~ $VERSION_REGEX ]] ) && echo "LOAD_IMAGES=false" >> $GITHUB_ENV || echo "LOAD_IMAGES=true" >> $GITHUB_ENV 
+          if [[ "$RELEASE_VER" =~ $VERSION_REGEX ]] && [[ "$SOURCE_BRANCH_VER" =~ $VERSION_REGEX ]] && [ "$SOURCE_BRANCH" != "$RELEASE_BRANCH" ] ; then 
+            echo "ERROR: Source branch name must be the same version"
+            exit 1
+          else
+            echo "INFO: Variables setup succeeded"
+          fi
+      - name: Print debug data before publishing
+        shell: bash
+        run: |
+          echo "    Docker Version: $(docker --version)"
+          echo "    Default branch: ${{ env.DEFAULT_BRANCH }}"
+          echo "   Repository name: ${{ env.REPOSITORY_NAME }}"
+          echo "     Source branch: ${{ env.SOURCE_BRANCH }}"
+          echo "Destination branch: ${{ env.DESTINATION_BRANCH }}"
+          echo "   Release version: ${{ env.RELEASE_VER }}"
+          echo "    Release branch: ${{ env.RELEASE_BRANCH }}"
+          echo "Source branch ver.: ${{ env.SOURCE_BRANCH_VER }}"
+          echo "    Release exists: ${{ env.RELEASE_EXISTS }}"
+          echo "        Event name: ${{ github.event_name }}"
+          echo "     Target Exists: ${{ env.TARGET_BRANCH_EXISTS }}"
+          echo "    Publish Images: ${{ env.PUBLISH_IMAGES }}"
+          echo "       Load Images: ${{ env.LOAD_IMAGES }}"
+      - name: Build Docker Images from Docker.src
+        shell: bash
+        run: |
+          export SOURCE_BRANCH=${{ env.SOURCE_BRANCH }}
+          make build
+          echo "(current dir): $PWD" && ls -Rl ./
+      # ref.: https://github.com/docker/setup-qemu-action, v2.1.0
+      # Example: http://blog.mauriciofreitas.eng.br/docker/2020/12/25/multiarch-docker-build-github-actions-en.html
+      - name: Setup QEMU (multi-platform)
+        id: qemu
+        uses: docker/setup-qemu-action@e81a89b1732b9c48d79cd809d8d81d79c4647a18
+        with:
+          platforms: linux/amd64,linux/arm64
+      # Install the cosign tool
+      # ref.: https://github.com/sigstore/cosign-installer, v3.0.1
+      - name: Install cosign
+        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65
+        with:
+          cosign-release: 'v2.0.0'
+      # Workaround: https://github.com/docker/build-push-action/issues/461
+      # ref.: https://github.com/docker/setup-buildx-action, v2.5.0
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@4b4e9c3e2d4531116a6f8ba8e71fc6e2cb6e6c8c
+        # # local registry only
+        # with:
+        #  driver-opts: network=host
+      # Login against a Docker registry except on PR
+      # https://github.com/docker/login-action v2.1.0
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Extract metadata (tags, labels) for Docker
+      # ref.: https://github.com/docker/metadata-action, v4.3.0
+      - name: Extract Docker metadata for base-image
+        id: meta-base
+        uses: docker/metadata-action@507c2f2dc502c992ad446e3d7a5dfbe311567a96
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BASE }}
+          tags: |
+            type=raw,value=${{ env.RELEASE_VER }}
+            type=sha,format=long
+          labels: |
+            org.opencontainers.image.licenses="CC BY-NC-SA 4.0"
+            org.opencontainers.image.url=ghcr.io/kiracore/docker/base-image:${{ env.RELEASE_VER }}
+            org.opencontainers.image.source=https://github.com/KiraCore/docker/base-image
+            org.opencontainers.image.title=base-image
+      - name: Build and push Docker base-image image
+        id: build-and-push-base
+        # ref. https://github.com/docker/build-push-action, v4.0.0
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: ./base-image
+          file: ./base-image/Dockerfile
+          push: true
+          tags: ${{ steps.meta-base.outputs.tags }}
+          labels: ${{ steps.meta-base.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+      - name: Extract Docker metadata for cors-anywhere
+        id: meta-cors
+        uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_CORS }}
+          tags: |
+            type=raw,value=${{ env.RELEASE_VER }}
+            type=sha,format=long
+          labels: |
+            org.opencontainers.image.licenses="CC BY-NC-SA 4.0"
+            org.opencontainers.image.url=ghcr.io/kiracore/docker/cors-anywhere:${{ env.RELEASE_VER }}
+            org.opencontainers.image.source=https://github.com/KiraCore/docker/cors-anywhere
+            org.opencontainers.image.title=cors-anywhere
+      - name: Build and push Docker cors-anywhere image
+        id: build-and-push-cors
+        # ref. https://github.com/docker/build-push-action, v4.0.0
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: ./cors-anywhere
+          file: ./cors-anywhere/Dockerfile
+          push: ${{ env.PUBLISH_IMAGES }}
+          tags: ${{ steps.meta-cors.outputs.tags }}
+          labels: ${{ steps.meta-cors.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+      - name: Extract Docker metadata for kira-image
+        id: meta-kira
+        uses: docker/metadata-action@f2a13332ac1ce8c0a71aeac48a150dbb1838ab67
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}
+          tags: |
+            type=raw,value=${{ env.RELEASE_VER }}
+            type=sha,format=long
+          labels: |
+            org.opencontainers.image.licenses="CC BY-NC-SA 4.0"
+            org.opencontainers.image.url=ghcr.io/kiracore/docker/kira-base:${{ env.RELEASE_VER }}
+            org.opencontainers.image.source=https://github.com/KiraCore/docker/kira-base
+            org.opencontainers.image.title=kira-base
+      - name: Build and push Docker kira-base image
+        id: build-and-push-kira
+        # ref. https://github.com/docker/build-push-action, v4.0.0
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: ./kira-base
+          file: ./kira-base/Dockerfile
+          push: ${{ env.PUBLISH_IMAGES }}
+          tags: ${{ steps.meta-kira.outputs.tags }}
+          labels: ${{ steps.meta-kira.outputs.labels }}
+          platforms: linux/amd64,linux/arm64
+      - name: Sign the published Docker base-image image
+        # if booleans handling (can be either bool or string depending on context)
+        if: env.PUBLISH_IMAGES == 'true' || env.PUBLISH_IMAGES == true
+        env:
+          COSIGN_EXPERIMENTAL: true
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          TAGS_BASE: ${{ steps.meta-base.outputs.tags }}
+          TAGS_CORS: ${{ steps.meta-cors.outputs.tags }}
+          TAGS_KIRA: ${{ steps.meta-kira.outputs.tags }}
+        run: |
+          cosign sign --key env://COSIGN_PRIVATE_KEY ${TAGS_BASE} --yes
+          cosign sign --key env://COSIGN_PRIVATE_KEY ${TAGS_CORS} --yes
+          cosign sign --key env://COSIGN_PRIVATE_KEY ${TAGS_KIRA} --yes
+      # If the secret is safely wiped, then the time its exposed to the build runner is very short
+      - name: Cleanup all resources
+        if: always()
+        shell: bash
+        run: |
+          chmod -Rv 666 ./* && rm -rfv ./*
+          echo "(current dir): $PWD" && ls -l ./
+      #- name: Publish to pinata
+      #  shell: bash
+      #  run: |
+      #    KIRA_BASE_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME_KIRA }}:${{ env.RELEASE_VER }}"
+      #    echo "INFO: Pinning Base Image: $KIRA_BASE_IMAGE"
+      #    echo "TODO: Missing pinata-cli install & upload"
