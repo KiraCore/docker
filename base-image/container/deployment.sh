@@ -50,7 +50,7 @@ PLATFORM=$(uname) && FILE_NAME=$(echo "cosign-${PLATFORM}-${ARCH}" | tr '[:upper
 
 FILE_HASH=$(sha256sum ./$FILE_NAME | awk '{ print $1 }' | xargs || echo -n "")
 
-COSIGN_HASH_ARM="55242a52ebca43dfb133d0fe26e11546bfa4571addd6852d782c119d74deade1"
+COSIGN_HASH_ARM="517e96f9d036c4b77db01132cacdbef21e4266e9ad3a93e67773c590ba54e26f"
 COSIGN_HASH_AMD="dc641173cbda29ba48580cdde3f80f7a734f3b558a25e5950a4b19f522678c70"
 if [ "$FILE_HASH" != "$COSIGN_HASH_ARM" ] && [ "$FILE_HASH" != "$COSIGN_HASH_AMD" ] ; then
     echoErr "ERROR: Failed to download cosign tool, expected checksum to be '$COSIGN_HASH_ARM' or '$COSIGN_HASH_AMD', but got '$FILE_HASH'"
