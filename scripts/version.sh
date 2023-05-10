@@ -2,4 +2,4 @@
 set -e
 set +x
 
-echo "v0.13.9"
+echo "v0.13.10"
