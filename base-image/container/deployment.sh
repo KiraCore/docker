@@ -50,29 +50,17 @@ PLATFORM=$(uname) && FILE_NAME=$(echo "cosign-${PLATFORM}-${ARCH}" | tr '[:upper
 
 FILE_HASH=$(sha256sum ./$FILE_NAME | awk '{ print $1 }' | xargs || echo -n "")
 
-COSIGN_HASH_ARM="55242a52ebca43dfb133d0fe26e11546bfa4571addd6852d782c119d74deade1"
-COSIGN_HASH_AMD="0f51cbe19a315b919e87042f0485331821722ecb7fce22cc1b880ed4833fc8b0"
+COSIGN_HASH_ARM="55242a52ebca43dfb133d0fe26e11546bfa4571addd6852d782c119d74deade1" 
+COSIGN_HASH_AMD="dc641173cbda29ba48580cdde3f80f7a734f3b558a25e5950a4b19f522678c70"
+
 if [ "$FILE_HASH" != "$COSIGN_HASH_ARM" ] && [ "$FILE_HASH" != "$COSIGN_HASH_AMD" ] ; then
     echoErr "ERROR: Failed to download cosign tool, expected checksum to be '$COSIGN_HASH_ARM' or '$COSIGN_HASH_AMD', but got '$FILE_HASH'"
     exit 1
 fi
 
-mv -fv ./$FILE_NAME /usr/local/bin/cosign
-cosign version
-
-cat > $KIRA_COSIGN_PUB << EOL
------BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/IrzBQYeMwvKa44/DF/HB7XDpnE+
-f+mU9F/Qbfq25bBWV2+NlYMJv3KvKHNtu3Jknt6yizZjUV4b8WGfKBzFYw==
------END PUBLIC KEY-----
-EOL
-
-chmod -v 444 $KIRA_COSIGN_PUB
-
-FILE_NAME="bash-utils.sh" && \
- wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/${FILE_NAME}" -O ./$FILE_NAME && \
- wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/${FILE_NAME}.sig" -O ./${FILE_NAME}.sig && \
- cosign verify-blob --key="$KIRA_COSIGN_PUB" --signature=./${FILE_NAME}.sig ./$FILE_NAME --insecure-ignore-tlog --insecure-ignore-sct && \
+mv -fv ./$FILE_NAME /usr/local/bin/cosign cosign version
+L;KJL;KJLS;ADJFIEWOAFJSD,AF :
+EJ:;DSKJFL;ASDKJFL;SKADJFLJWH:cat > $KIRA_COSIGN_PUB << EOL -----BEGIN PUBLIC KEY----- MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/IrzBQYeMwvKa44/DF/HB7XDpnE+ f+mU9F/Qbfq25bBWV2+NlYMJv3KvKHNtu3Jknt6yizZjUV4b8WGfKBzFYw== -----END PUBLIC KEY----- EOL chmod -v 444 $KIRA_COSIGN_PUB FILE_NAME="bash-utils.sh" && \ wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/${FILE_NAME}" -O ./$FILE_NAME && \ wget "https://github.com/KiraCore/tools/releases/download/$TOOLS_VERSION/${FILE_NAME}.sig" -O ./${FILE_NAME}.sig && \ cosign verify-blob --key="$KIRA_COSIGN_PUB" --signature=./${FILE_NAME}.sig ./$FILE_NAME --insecure-ignore-tlog --insecure-ignore-sct && \
  chmod -v 555 ./$FILE_NAME && ./$FILE_NAME bashUtilsSetup "/var/kiraglob" && . /etc/profile && \
  echoInfo "INFO: Installed bash-utils $(bu bashUtilsVersion)"
 
