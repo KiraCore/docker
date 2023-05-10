@@ -12,7 +12,7 @@ FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.17.5"
 TOOLS_VERSION="v0.3.42"
-COSIGN_VERSION="v2.0.0"
+COSIGN_VERSION="v2.0.2"
 
 echo "Starting core dependency build..."
 apt-get update -y > ./log || ( cat ./log && exit 1 )
