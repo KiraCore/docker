@@ -1,3 +1,3 @@
 Features:
 
-* upgraded sekai release to `v0.3.17`
+* upgraded interx release to `v0.4.35`
