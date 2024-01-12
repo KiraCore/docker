@@ -33,7 +33,7 @@ cosign verify --key ./cosign.pub ghcr.io/kiracore/docker/base-image:v0.13.14
 ```
 # To launch test container run
 BASE_NAME="test" && \
- BASE_IMG="ghcr.io/kiracore/docker/kira-base:v0.13.14" && \
+ BASE_IMG="ghcr.io/kiracore/docker/kira-base:v0.13.15" && \
  docker run -i -t -d --privileged --net bridge --name $BASE_NAME --hostname test.local $BASE_IMG /bin/bash
 
 # Note: If you want to run an extra container inside the KIRA Manager, replace '--net bridge' flag with '--net kiranet'
