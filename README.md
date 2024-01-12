@@ -8,7 +8,7 @@ All containers are signed with [cosign](https://github.com/sigstore/cosign/relea
 
 ```
 # install cosign
-CS_VERSION="2.0.2" && ARCH=$(([[ "$(uname -m)" == *"arm"* ]] || [[ "$(uname -m)" == *"aarch"* ]]) && echo "arm64" || echo "amd64") && \
+CS_VERSION="2.0.0" && ARCH=$(([[ "$(uname -m)" == *"arm"* ]] || [[ "$(uname -m)" == *"aarch"* ]]) && echo "arm64" || echo "amd64") && \
     OS_VERSION=$(uname) && CS_DEB="cosign_${CS_VERSION}_${ARCH}.deb" && cd /tmp && rm -fv ./$CS_DEB && \
     (dpkg -r cosign || ( echo "WARNING: Failed to remove old cosign version" && sleep 1 ) ) && \
     wget https://github.com/sigstore/cosign/releases/download/v${CS_VERSION}/${CS_DEB} && \
