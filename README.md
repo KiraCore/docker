@@ -8,7 +8,7 @@ All containers are signed with [cosign](https://github.com/sigstore/cosign/relea
 
 ```
 # install cosign
-CS_VERSION="2.0.0" && ARCH=$(([[ "$(uname -m)" == *"arm"* ]] || [[ "$(uname -m)" == *"aarch"* ]]) && echo "arm64" || echo "amd64") && \
+CS_VERSION="2.2.4" && ARCH=$(([[ "$(uname -m)" == *"arm"* ]] || [[ "$(uname -m)" == *"aarch"* ]]) && echo "arm64" || echo "amd64") && \
     OS_VERSION=$(uname) && CS_DEB="cosign_${CS_VERSION}_${ARCH}.deb" && cd /tmp && rm -fv ./$CS_DEB && \
     (dpkg -r cosign || ( echo "WARNING: Failed to remove old cosign version" && sleep 1 ) ) && \
     wget https://github.com/sigstore/cosign/releases/download/v${CS_VERSION}/${CS_DEB} && \
@@ -26,14 +26,14 @@ f+mU9F/Qbfq25bBWV2+NlYMJv3KvKHNtu3Jknt6yizZjUV4b8WGfKBzFYw==
 
 ## Cosign Verification Example
 ```
-cosign verify --key ./cosign.pub ghcr.io/kiracore/docker/base-image:v0.13.6
+cosign verify --key ./cosign.pub ghcr.io/kiracore/docker/base-image:v0.14.03
 ```
 
 ## Launch Container Locally
 ```
 # To launch test container run
 BASE_NAME="test" && \
- BASE_IMG="ghcr.io/kiracore/docker/kira-base:v0.13.6" && \
+ BASE_IMG="ghcr.io/kiracore/docker/kira-base:v0.14.03" && \
  docker run -i -t -d --privileged --net bridge --name $BASE_NAME --hostname test.local $BASE_IMG /bin/bash
 
 # Note: If you want to run an extra container inside the KIRA Manager, replace '--net bridge' flag with '--net kiranet'

@@ -1,7 +1,5 @@
 Features:
 
-* upgraded tools release to `v0.3.42`
-* upgraded interx release to `v0.4.29`
-* upgraded sekai release to `v0.3.13.37`
-* upgraded cosign release to `v2.0.0`
-* upgraded go release to `1.20.2`
+* upgrade cosign to `v2.2.3` 
+* upgrade interx release to `v0.4.48`
+* upgrade sekai release to `v0.3.43`

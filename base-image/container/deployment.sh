@@ -11,8 +11,8 @@ FLUTTER_CHANNEL="stable"
 FLUTTER_VERSION="3.0.4-$FLUTTER_CHANNEL"
 DART_CHANNEL_PATH="stable/release"
 DART_VERSION="2.17.5"
-TOOLS_VERSION="v0.3.42"
-COSIGN_VERSION="v2.0.0"
+TOOLS_VERSION="v0.3.46"
+COSIGN_VERSION="v2.2.3"
 
 echo "Starting core dependency build..."
 apt-get update -y > ./log || ( cat ./log && exit 1 )
@@ -50,8 +50,8 @@ PLATFORM=$(uname) && FILE_NAME=$(echo "cosign-${PLATFORM}-${ARCH}" | tr '[:upper
 
 FILE_HASH=$(sha256sum ./$FILE_NAME | awk '{ print $1 }' | xargs || echo -n "")
 
-COSIGN_HASH_ARM="8132cb2fb99a4c60ba8e03b079e12462c27073028a5d08c07ecda67284e0c88d"
-COSIGN_HASH_AMD="169a53594c437d53ffc401b911b7e70d453f5a2c1f96eb2a736f34f6356c4f2b"
+COSIGN_HASH_ARM="b088d676f0c0123b8c348e18d421cf966020edc4977a486115a12643dea99a3f"
+COSIGN_HASH_AMD="f669f41176cb1d58bb6a3fdb06e24861540cfdb5a571b4ec5eb2218b0df5d304"
 if [ "$FILE_HASH" != "$COSIGN_HASH_ARM" ] && [ "$FILE_HASH" != "$COSIGN_HASH_AMD" ] ; then
     echoErr "ERROR: Failed to download cosign tool, expected checksum to be '$COSIGN_HASH_ARM' or '$COSIGN_HASH_AMD', but got '$FILE_HASH'"
     exit 1
